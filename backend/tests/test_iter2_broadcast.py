@@ -5,7 +5,7 @@ import pytest
 import requests
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://arc-preview-2.preview.emergentagent.com").rstrip("/")
-ADMIN_PASSWORD = "RevengeArc2026!"
+ADMIN_PASSWORD = "Bashar1212"
 
 
 def _email(prefix="user"):
@@ -150,7 +150,7 @@ class TestEmailShell:
         assert INSTAGRAM_URL in html
         assert TIKTOK_URL in html
         assert DISCORD_URL in html
-        assert "RevengeArkHelp@gmail.com" in html
+        assert "Revengearchelp@gmail.com" in html
         # Pills text
         assert "INSTAGRAM" in html
         assert "TIKTOK" in html

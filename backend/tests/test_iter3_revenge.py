@@ -6,7 +6,7 @@ import pytest
 import requests
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
-ADMIN_PASSWORD = "RevengeArc2026!"
+ADMIN_PASSWORD = "Bashar1212"
 
 
 def _email(prefix="user"):
@@ -39,7 +39,7 @@ class TestRootAndPublicConfig:
         r = s.get(f"{BASE_URL}/api/config/public")
         assert r.status_code == 200
         d = r.json()
-        assert d.get("support_email") == "RevengeArkHelp@gmail.com", d
+        assert d.get("support_email") == "Revengearchelp@gmail.com", d
 
 
 # ============== Stats range ==============

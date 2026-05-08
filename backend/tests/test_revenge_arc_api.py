@@ -5,7 +5,7 @@ import pytest
 import requests
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://arc-preview-2.preview.emergentagent.com").rstrip("/")
-ADMIN_PASSWORD = "RevengeArc2026!"
+ADMIN_PASSWORD = "Bashar1212"
 
 
 def _email(prefix="user"):

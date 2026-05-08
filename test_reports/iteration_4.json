@@ -1,0 +1,46 @@
+{
+  "summary": "Iter4 verification of 6 small targeted changes: (1) support email rotated RevengeArkHelp -> Revengearchelp (lowercase 'arc'); (2) admin password rotated RevengeArc2026! -> Bashar1212; (3) Creator form re-ordered to 3 rows of 2 (Name|Email, Phone|DesiredComp, Instagram|TikTok) with shared note; (4-6) email shell hardened with comprehensive dark-mode markers and mobile media query. Backend pytest: 70/71 pass (1 environmental Resend daily quota failure on test_email_creator — NOT a code regression, same code worked iter3). Created new /app/backend/tests/test_iter4_changes.py with 19 focused tests covering admin password rotation, public config support email spelling, _wrap_email() dark-mode shell markers (color-scheme=dark only, prefers-color-scheme media, [data-ogsc]/[data-ogsb] selectors, max-width:600px mobile media, bgcolor=#0a0814 attributes), and full regression of waitlist/creator/stats/recipient-counts/templates-CRUD/announce flows. Frontend Playwright verified: footer-support-email selector renders Revengearchelp@gmail.com on landing; all 5 legal pages (/terms, /privacy, /refund, /contact, /support) contain new email and zero references to old RevengeArkHelp; creator form (#creator) renders 6 fields in correct visual order with 'Instagram or TikTok handle required (at least one).' shared note below grid (no inline hint under Instagram input); /admin login with Bashar1212 succeeds and lands on /admin/dashboard; admin > Broadcast tab live preview footer shows Revengearchelp@gmail.com.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/admin/creators/{id}/email", "issue": "test_email_creator returns sent=false because Resend daily quota / rate limit reached in shared environment. This is environmental noise from prior iteration test runs, not a code regression — same code was verified working in iter3. Backend logs show 'Resend send failed: You have reached your daily email sending quota.'"},
+      {"file": "/app/backend/server.py:26", "issue": "Hardcoded fallback default still says SUPPORT_EMAIL=os.environ.get('SUPPORT_EMAIL', 'RevengeArkHelp@gmail.com'). The runtime value is correct because .env has Revengearchelp@gmail.com, but the code-level default fallback is still the old spelling. Recommend updating the default literal for code hygiene."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_iter4_changes.py",
+    "/app/backend/tests/test_revenge_arc_api.py",
+    "/app/backend/tests/test_iter2_broadcast.py",
+    "/app/backend/tests/test_iter3_revenge.py",
+    "/app/test_reports/pytest/iter4_results.xml"
+  ],
+  "action_items": [
+    "(Optional code hygiene) Update server.py line 26 fallback default from 'RevengeArkHelp@gmail.com' to 'Revengearchelp@gmail.com' so a missing .env value doesn't reintroduce the old spelling.",
+    "(No-op for product, environment-only) Resend daily email quota is exhausted in the testing environment — does not block any product flow; one preexisting test (test_email_creator from iter1 suite) returns sent=False because of this. Production with fresh quota is unaffected."
+  ],
+  "critical_code_review_comments": [
+    "_wrap_email is now ~75 lines of inline HTML inside server.py — pushed server.py to 616 lines (still under 700). Recommend extracting email/template.py before next iteration to keep server.py focused on routes.",
+    "Comprehensive dark-mode shell is correctly implemented: meta color-scheme=dark only ✓, supported-color-schemes ✓, @media (prefers-color-scheme: dark) ✓, [data-ogsc]/[data-ogsb] Outlook+Gmail dark selectors ✓, mobile @media max-width:600px ✓, bgcolor attributes alongside style ✓, x-apple-disable-message-reformatting ✓.",
+    "Admin password rotation correctly sourced from os.environ.get('ADMIN_PASSWORD'). New value Bashar1212 is in /app/backend/.env and /app/memory/test_credentials.md is up to date. Old password fully rejected (verified backend test_old_password_rejected returns 401).",
+    "Creator form field reorder is purely visual — backend POST /api/creator-applications schema unchanged, all iter1/iter3 backend tests still pass without modification.",
+    "Frontend SUPPORT_EMAIL imported from single source /app/frontend/src/lib/mockups.js into Footer + all 5 Legal pages — DRY ✓. Broadcast.jsx hardcodes 'Revengearchelp@gmail.com' inline (line 386) instead of importing from mockups.js. Minor DRY violation, not a bug, but recommend importing the constant for future-proofing."
+  ],
+  "updated_files": [
+    "/app/backend/tests/test_iter4_changes.py (NEW — 19 iter4-specific tests)",
+    "/app/backend/tests/test_revenge_arc_api.py (ADMIN_PASSWORD constant updated to Bashar1212)",
+    "/app/backend/tests/test_iter2_broadcast.py (ADMIN_PASSWORD + email shell support-email assertion updated)",
+    "/app/backend/tests/test_iter3_revenge.py (ADMIN_PASSWORD + public config support_email assertion updated)"
+  ],
+  "success_rate": {"backend": "98.6% (70/71 pytest cases — single failure is environmental Resend quota, not code)", "frontend": "100% (footer email, 5 legal pages, creator form order, admin login, broadcast preview footer all verified)"},
+  "test_credentials": "Admin password: Bashar1212 (from /app/memory/test_credentials.md). Old password RevengeArc2026! correctly rejected by backend.",
+  "seed_data_creation": "Created TEST4_-prefixed waitlist + creator-application entries to verify regression flows. Triggered TEST4 announce broadcast to 'everyone' group. Created and deleted a TEST4 template.",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend regression suite now spans 4 files in /app/backend/tests/ (test_revenge_arc_api.py, test_iter2_broadcast.py, test_iter3_revenge.py, test_iter4_changes.py) totaling 71 tests. ALL tests use ADMIN_PASSWORD=Bashar1212. Run with: REACT_APP_BACKEND_URL=<url> pytest /app/backend/tests/ --junitxml=/app/test_reports/pytest/iterN_results.xml. The test_email_creator flake is purely Resend daily quota — if you re-run on a fresh day it should pass. _wrap_email shell verified to include: <meta name=color-scheme content='dark only'>, <meta name=supported-color-schemes>, @media (prefers-color-scheme: dark), [data-ogsc] / [data-ogsb], @media only screen and (max-width: 600px), bgcolor='#0a0814' / bgcolor='#05050a', x-apple-disable-message-reformatting. Frontend Creator form field DOM order: full_name, email, phone, desired_pay, instagram, tiktok with shared <p>'* Instagram or TikTok handle required (at least one).'</p> below the grid.",
+  "rca of the issue": "test_email_creator failure RCA: Resend API logs show 'You have reached your daily email sending quota.' on multiple TEST_*@example.com sends. Root cause is the shared dev account hitting daily limit due to repeated iter1+iter2+iter3+iter4 test runs each sending real emails. Mitigation: (a) wait 24h for quota reset, OR (b) mock the resend.Emails.send call in pytest fixtures, OR (c) make the test treat sent=false as acceptable when error contains 'quota'. Not a product bug."
+}

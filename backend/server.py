@@ -141,32 +141,73 @@ def require_admin(authorization: Optional[str] = Header(default=None)):
 # ============== EMAIL ==============
 
 def _wrap_email(title: str, body_html: str, accent: str = "#a855f7") -> str:
-    return f"""
+    return f"""\
 <!DOCTYPE html>
-<html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"></head>
-<body style="margin:0;padding:0;background:#05050a;font-family:-apple-system,Segoe UI,Roboto,Helvetica,Arial,sans-serif;color:#ffffff;">
-  <table role="presentation" width="100%" cellpadding="0" cellspacing="0" style="background:#05050a;padding:40px 16px;">
-    <tr><td align="center">
-      <table role="presentation" width="600" cellpadding="0" cellspacing="0"
-        style="max-width:600px;background:linear-gradient(180deg,#0b0b14 0%,#0a0814 100%);border:1px solid rgba(168,85,247,0.25);border-radius:18px;overflow:hidden;">
-        <tr><td style="padding:28px 32px;border-bottom:1px solid rgba(168,85,247,0.18);">
-          <div style="font-size:13px;letter-spacing:6px;color:{accent};text-transform:uppercase;font-weight:700;">REVENGE ARC</div>
-          <div style="font-size:24px;color:#fff;margin-top:6px;font-weight:800;">{title}</div>
+<html lang="en" style="background:#05050a;">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width,initial-scale=1">
+  <meta name="x-apple-disable-message-reformatting">
+  <meta name="color-scheme" content="dark only">
+  <meta name="supported-color-schemes" content="dark only">
+  <title>Revenge Arc</title>
+  <style>
+    :root {{ color-scheme: dark only; supported-color-schemes: dark only; }}
+    body, table, td, p, a, h1, h2, h3, span, div {{ -webkit-font-smoothing:antialiased; -webkit-text-size-adjust:100%; -ms-text-size-adjust:100%; }}
+    img {{ -ms-interpolation-mode:bicubic; border:0; outline:none; text-decoration:none; }}
+    a {{ text-decoration:none; }}
+    @media (prefers-color-scheme: dark) {{
+      .ra-bg {{ background:#05050a !important; }}
+      .ra-card {{ background:#0a0814 !important; }}
+      .ra-card-top {{ background:#0b0b14 !important; }}
+      .ra-heading, .ra-strong {{ color:#ffffff !important; }}
+      .ra-body {{ color:#cfcfe5 !important; }}
+      .ra-muted {{ color:#7a7a96 !important; }}
+      .ra-accent, .ra-link {{ color:{accent} !important; }}
+    }}
+    [data-ogsc] .ra-card {{ background:#0a0814 !important; }}
+    [data-ogsc] .ra-card-top {{ background:#0b0b14 !important; }}
+    [data-ogsc] .ra-heading, [data-ogsc] .ra-strong {{ color:#ffffff !important; }}
+    [data-ogsc] .ra-body {{ color:#cfcfe5 !important; }}
+    [data-ogsc] .ra-muted {{ color:#7a7a96 !important; }}
+    [data-ogsc] .ra-accent, [data-ogsc] .ra-link {{ color:{accent} !important; }}
+    [data-ogsb] .ra-card {{ background:#0a0814 !important; }}
+    @media only screen and (max-width: 600px) {{
+      .ra-outer {{ padding:18px 10px !important; }}
+      .ra-card {{ border-radius:14px !important; }}
+      .ra-pad {{ padding:22px 18px !important; }}
+      .ra-pad-bottom {{ padding:18px 18px 22px !important; }}
+      .ra-heading {{ font-size:21px !important; line-height:1.25 !important; }}
+      .ra-body {{ font-size:15px !important; line-height:1.7 !important; }}
+      .ra-soc-pill {{ display:inline-block !important; margin:4px 3px !important; padding:7px 11px !important; font-size:10px !important; }}
+    }}
+  </style>
+  <!--[if mso]><style>body, table, td {{ font-family: Arial, Helvetica, sans-serif !important; }}</style><![endif]-->
+</head>
+<body class="ra-bg" style="margin:0;padding:0;background:#05050a;font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Roboto,Helvetica,Arial,sans-serif;color:#ffffff;">
+  <div style="display:none;max-height:0;overflow:hidden;font-size:1px;line-height:1px;color:#05050a;opacity:0;">{title}</div>
+  <table role="presentation" class="ra-bg" width="100%" cellpadding="0" cellspacing="0" border="0" bgcolor="#05050a" style="background:#05050a;">
+    <tr><td class="ra-outer" align="center" style="padding:36px 16px;">
+      <table role="presentation" width="600" cellpadding="0" cellspacing="0" border="0" class="ra-card" bgcolor="#0a0814"
+        style="max-width:600px;width:100%;background-color:#0a0814;border:1px solid rgba(168,85,247,0.30);border-radius:18px;overflow:hidden;">
+        <tr><td class="ra-card-top ra-pad" bgcolor="#0b0b14" style="background-color:#0b0b14;padding:26px 30px;border-bottom:1px solid rgba(168,85,247,0.18);">
+          <div class="ra-accent" style="font-size:13px;letter-spacing:6px;color:{accent};text-transform:uppercase;font-weight:700;">REVENGE ARC</div>
+          <div class="ra-heading" style="font-size:24px;color:#ffffff;margin-top:6px;font-weight:800;line-height:1.25;">{title}</div>
         </td></tr>
-        <tr><td style="padding:28px 32px;color:#cfcfe5;font-size:15px;line-height:1.7;">
+        <tr><td class="ra-pad ra-body" bgcolor="#0a0814" style="background-color:#0a0814;padding:26px 30px;color:#cfcfe5;font-size:15px;line-height:1.7;">
           {body_html}
         </td></tr>
-        <tr><td style="padding:24px 32px;border-top:1px solid rgba(168,85,247,0.18);">
-          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
-            <tr><td align="center" style="padding-bottom:16px;">
-              <a href="{INSTAGRAM_URL}" style="text-decoration:none;display:inline-block;margin:0 6px;padding:8px 14px;background:rgba(236,72,153,0.12);border:1px solid rgba(236,72,153,0.35);border-radius:999px;color:#f9a8d4;font-size:11px;font-weight:700;letter-spacing:2px;">INSTAGRAM</a>
-              <a href="{TIKTOK_URL}" style="text-decoration:none;display:inline-block;margin:0 6px;padding:8px 14px;background:rgba(34,211,238,0.12);border:1px solid rgba(34,211,238,0.35);border-radius:999px;color:#67e8f9;font-size:11px;font-weight:700;letter-spacing:2px;">TIKTOK</a>
-              <a href="{DISCORD_URL}" style="text-decoration:none;display:inline-block;margin:0 6px;padding:8px 14px;background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.35);border-radius:999px;color:#c4b5fd;font-size:11px;font-weight:700;letter-spacing:2px;">DISCORD</a>
+        <tr><td class="ra-pad-bottom" bgcolor="#0a0814" style="background-color:#0a0814;padding:22px 30px 26px;border-top:1px solid rgba(168,85,247,0.18);">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0" border="0">
+            <tr><td align="center" style="padding-bottom:14px;">
+              <a href="{INSTAGRAM_URL}" class="ra-soc-pill" style="text-decoration:none;display:inline-block;margin:0 5px;padding:8px 14px;background-color:rgba(236,72,153,0.14);border:1px solid rgba(236,72,153,0.40);border-radius:999px;color:#f9a8d4;font-size:11px;font-weight:700;letter-spacing:2px;">INSTAGRAM</a>
+              <a href="{TIKTOK_URL}" class="ra-soc-pill" style="text-decoration:none;display:inline-block;margin:0 5px;padding:8px 14px;background-color:rgba(34,211,238,0.14);border:1px solid rgba(34,211,238,0.40);border-radius:999px;color:#67e8f9;font-size:11px;font-weight:700;letter-spacing:2px;">TIKTOK</a>
+              <a href="{DISCORD_URL}" class="ra-soc-pill" style="text-decoration:none;display:inline-block;margin:0 5px;padding:8px 14px;background-color:rgba(168,85,247,0.14);border:1px solid rgba(168,85,247,0.40);border-radius:999px;color:#c4b5fd;font-size:11px;font-weight:700;letter-spacing:2px;">DISCORD</a>
             </td></tr>
-            <tr><td style="color:#7a7a96;font-size:12px;line-height:1.6;text-align:center;">
+            <tr><td class="ra-muted" style="color:#7a7a96;font-size:12px;line-height:1.6;text-align:center;">
               You're receiving this because you joined the Revenge Arc movement.<br>
-              Need help? <a href="mailto:{SUPPORT_EMAIL}" style="color:{accent};text-decoration:none;">{SUPPORT_EMAIL}</a><br>
-              <span style="color:{accent};font-weight:700;letter-spacing:3px;">THEREVENGE_ARC</span> &middot; Built for warriors.
+              Need help? <a class="ra-link" href="mailto:{SUPPORT_EMAIL}" style="color:{accent};text-decoration:none;">{SUPPORT_EMAIL}</a><br>
+              <span class="ra-accent" style="color:{accent};font-weight:700;letter-spacing:3px;">THEREVENGE_ARC</span> &middot; Built for warriors.
             </td></tr>
           </table>
         </td></tr>

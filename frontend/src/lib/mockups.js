@@ -18,4 +18,4 @@ export const SOCIALS = {
   discord: "https://discord.gg/p95MCTsG",
 };
 
-export const SUPPORT_EMAIL = "RevengeArkHelp@gmail.com";
+export const SUPPORT_EMAIL = "Revengearchelp@gmail.com";

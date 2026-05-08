@@ -93,9 +93,12 @@ export default function CreatorProgramSection() {
                 <Field label="Full Name" required name="full_name" value={form.full_name} onChange={onChange("full_name")} placeholder="Your name" />
                 <Field label="Email" required type="email" name="email" value={form.email} onChange={onChange("email")} placeholder="you@brand.com" />
                 <Field label="Phone Number" required name="phone" value={form.phone} onChange={onChange("phone")} placeholder="+1 ..." />
-                <Field label="Instagram Handle" name="instagram" value={form.instagram} onChange={onChange("instagram")} placeholder="@yourhandle" hint="IG or TikTok required" />
-                <Field label="TikTok Handle" name="tiktok" value={form.tiktok} onChange={onChange("tiktok")} placeholder="@yourhandle" />
                 <Field label="Desired Compensation" required name="desired_pay" value={form.desired_pay} onChange={onChange("desired_pay")} placeholder="What type of compensation are you looking for?" />
+                <Field label="Instagram Handle" name="instagram" value={form.instagram} onChange={onChange("instagram")} placeholder="@yourhandle" />
+                <Field label="TikTok Handle" name="tiktok" value={form.tiktok} onChange={onChange("tiktok")} placeholder="@yourhandle" />
+              </div>
+              <div className="-mt-2 text-[11px] text-amber-300/85 font-medium tracking-wide">
+                * Instagram or TikTok handle required (at least one).
               </div>
 
               <Textarea label="Why do you want to support Revenge Arc?" required value={form.why_support} onChange={onChange("why_support")} rows={4} />
