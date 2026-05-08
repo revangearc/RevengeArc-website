@@ -71,15 +71,12 @@ export default function NutritionSection() {
             ))}
           </div>
         </div>
-
-        {/* AI Food Scan teaser bottom */}
-        <AIFoodScanCard />
       </div>
     </section>
   );
 }
 
-function AIFoodScanCard() {
+function AIFoodScanCard_unused() {
   return (
     <motion.div
       initial={{ opacity: 0, y: 40 }}

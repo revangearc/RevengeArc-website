@@ -9,6 +9,7 @@ export const MOCKUPS = {
   progressHub2: "https://customer-assets.emergentagent.com/job_arc-preview-2/artifacts/hjlgp095_ChatGPT%20Image%20May%207%2C%202026%2C%2010_48_14%20PM.png",
   combat: "https://customer-assets.emergentagent.com/job_arc-preview-2/artifacts/x0i1s34m_ChatGPT%20Image%20May%207%2C%202026%2C%2011_56_53%20PM.png",
   profile: "https://customer-assets.emergentagent.com/job_arc-preview-2/artifacts/fvmdjt8y_ChatGPT%20Image%20May%207%2C%202026%2C%2011_44_17%20PM.png",
+  foodScan: "https://customer-assets.emergentagent.com/job_arc-preview-2/artifacts/jlfvakcr_ChatGPT%20Image%20May%208%2C%202026%2C%2012_33_37%20PM.png",
 };
 
 export const SOCIALS = {
@@ -16,3 +17,5 @@ export const SOCIALS = {
   tiktok: "https://www.tiktok.com/@therevenge_arc?is_from_webapp=1&sender_device=pc",
   discord: "https://discord.gg/p95MCTsG",
 };
+
+export const SUPPORT_EMAIL = "RevengeArkHelp@gmail.com";

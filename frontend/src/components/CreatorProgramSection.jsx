@@ -13,7 +13,6 @@ export default function CreatorProgramSection() {
     instagram: "",
     tiktok: "",
     why_support: "",
-    compensation_type: "",
     desired_pay: "",
     audience: "",
   });
@@ -42,21 +41,21 @@ export default function CreatorProgramSection() {
   };
 
   return (
-    <section id="creator" className="relative py-28 sm:py-36 overflow-hidden" data-testid="section-creator">
+    <section id="creator" className="relative py-24 sm:py-32 overflow-hidden" data-testid="section-creator">
       <div className="orb orb-amber w-[600px] h-[600px] -top-32 -left-40 opacity-25" />
       <div className="orb orb-purple w-[500px] h-[500px] -bottom-40 -right-32 opacity-25" />
 
-      <div className="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-12 items-start">
+      <div className="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-10 lg:gap-12 items-start">
         <div className="lg:col-span-5 lg:sticky lg:top-28">
           <div className="inline-flex items-center gap-2 px-3 py-1.5 rounded-full border border-amber-500/40 bg-amber-500/10 mb-5">
             <Trophy className="h-3.5 w-3.5 text-amber-400" />
             <span className="text-[11px] tracking-[0.3em] font-bold text-amber-300">CREATOR PROGRAM</span>
           </div>
           <h2 className="font-display font-extrabold text-4xl sm:text-5xl lg:text-6xl tracking-tight">
-            Build with us. <br /><span className="gradient-amber">Get paid.</span>
+            Become a <br /><span className="gradient-amber">Revenge Arc creator.</span>
           </h2>
-          <p className="mt-5 text-white/65 text-lg leading-relaxed">
-            Selected creators get early access, brand kits, paid partnerships, and direct line to our team. We hand-pick every creator. No bots. No volume.
+          <p className="mt-5 text-white/65 text-base sm:text-lg leading-relaxed">
+            Hand-picked creators get early access, brand kits, paid partnerships, and a direct line to our team. Every application is reviewed manually.
           </p>
 
           <ul className="mt-8 space-y-3">
@@ -64,7 +63,8 @@ export default function CreatorProgramSection() {
               "Manual review by our team",
               "Paid partnerships & sponsored drops",
               "Brand kit + early app access",
-              "Direct slack with founders",
+              "Direct communication with founders",
+              "Affiliate opportunities",
             ].map((b) => (
               <li key={b} className="flex items-start gap-3 text-white/75">
                 <span className="mt-1 h-5 w-5 rounded-full border border-amber-500/40 bg-amber-500/10 grid place-items-center flex-shrink-0">
@@ -76,7 +76,7 @@ export default function CreatorProgramSection() {
           </ul>
         </div>
 
-        <div className="lg:col-span-7">
+        <div className="lg:col-span-7 w-full">
           {done ? (
             <SuccessCard accent="amber" title="Application received." subtitle="Manually reviewed by the Revenge Arc team. Check your inbox." />
           ) : (
@@ -86,23 +86,26 @@ export default function CreatorProgramSection() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.7 }}
-              className="glass-amber rounded-3xl p-6 sm:p-8 space-y-5"
+              className="glass-amber rounded-3xl p-5 sm:p-7 space-y-5"
               data-testid="creator-form"
             >
-              <div className="grid sm:grid-cols-2 gap-5">
+              <div className="grid sm:grid-cols-2 gap-4 sm:gap-5">
                 <Field label="Full Name" required name="full_name" value={form.full_name} onChange={onChange("full_name")} placeholder="Your name" />
                 <Field label="Email" required type="email" name="email" value={form.email} onChange={onChange("email")} placeholder="you@brand.com" />
                 <Field label="Phone Number" required name="phone" value={form.phone} onChange={onChange("phone")} placeholder="+1 ..." />
                 <Field label="Instagram Handle" name="instagram" value={form.instagram} onChange={onChange("instagram")} placeholder="@yourhandle" hint="IG or TikTok required" />
                 <Field label="TikTok Handle" name="tiktok" value={form.tiktok} onChange={onChange("tiktok")} placeholder="@yourhandle" />
-                <Field label="Compensation Type" required name="compensation_type" value={form.compensation_type} onChange={onChange("compensation_type")} placeholder="Cash / Equity / Affiliate / etc" />
-                <Field label="Desired Pay" required name="desired_pay" value={form.desired_pay} onChange={onChange("desired_pay")} placeholder="$500/post, $5k retainer..." />
+                <Field label="Desired Compensation" required name="desired_pay" value={form.desired_pay} onChange={onChange("desired_pay")} placeholder="What type of compensation are you looking for?" />
               </div>
 
               <Textarea label="Why do you want to support Revenge Arc?" required value={form.why_support} onChange={onChange("why_support")} rows={4} />
               <Textarea label="Tell us about your audience/community" required value={form.audience} onChange={onChange("audience")} rows={4} placeholder="Followers, niche, demographics, engagement..." />
 
-              <button type="submit" disabled={submitting} className="btn-primary w-full justify-center !bg-gradient-to-r !from-amber-500 !to-orange-600 !border-amber-500/60" data-testid="creator-submit-btn"
+              <button
+                type="submit"
+                disabled={submitting}
+                className="btn-primary w-full justify-center !bg-gradient-to-r !from-amber-500 !to-orange-600 !border-amber-500/60"
+                data-testid="creator-submit-btn"
                 style={{ boxShadow: "0 0 30px rgba(245,158,11,0.45), inset 0 1px 0 rgba(255,255,255,0.2)" }}
               >
                 {submitting ? <Loader2 className="h-4 w-4 animate-spin" /> : <Trophy className="h-4 w-4" />}

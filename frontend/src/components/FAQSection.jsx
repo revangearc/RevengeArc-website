@@ -4,12 +4,15 @@ import { Plus, Minus } from "lucide-react";
 import SectionHeader from "./SectionHeader";
 
 const items = [
-  { q: "When is Revenge Arc launching?", a: "We're in private beta now. Join the waitlist to lock in early access — first wave drops to early signups before public release." },
-  { q: "Is the AI actually intelligent?", a: "Gym Buddie is built on top of frontier models, fine-tuned on training science. It knows your stats, your goals, your history — and adapts." },
-  { q: "Will the app be free?", a: "Core tracking, the Arena, and a baseline AI tier will be free. Premium unlocks include Form Lab AI, photo physique analysis, weekly AI reports, and unlimited coach chats." },
-  { q: "Is it on iPhone and Android?", a: "Yes. iOS is shipping first, Android follows shortly after. Pick your device on the waitlist form." },
-  { q: "How does the Creator Program work?", a: "Manual review only. Approved creators get paid partnerships, brand assets, early access, and a direct line with our team." },
-  { q: "What happens if I miss a day?", a: "You get a Broken Vow notification. Streaks reset, but the Discipline Meter remembers. The arc never ends — start it again." },
+  { q: "What is Revenge Arc?", a: "Revenge Arc is a cinematic AI self-improvement platform built around discipline, transformation, and the warrior mindset. It combines workout tracking, nutrition, AI coaching, progress analytics, and community into one unified system." },
+  { q: "How is this different from other fitness apps?", a: "Other apps log data. Revenge Arc weaponizes it. Every feature — from streaks to AI form analysis to weekly cinematic reports — is designed to compound discipline and force a real arc, not just a number on a graph." },
+  { q: "Is Revenge Arc free?", a: "Yes — the Starter plan is free forever and includes basic workout tracking, limited progress tools, and limited community access." },
+  { q: "What does Premium include?", a: "The Warrior plan unlocks the full Gym Buddie AI coach, AI workout builder, AI food scan, weekly AI reports, body progress AI, advanced trackers, the full rank system, premium challenges, and Arena access." },
+  { q: "Will new features be added?", a: "Constantly. Premium subscribers get priority access to every new AI module, challenge system, and analytics layer we ship." },
+  { q: "Is this for beginners?", a: "Yes. The system adapts to your level — beginners get guided routines and AI form coaching, advanced lifters get progressive overload analytics and PR tracking." },
+  { q: "Can I track macros?", a: "Yes. Calories, protein, carbs, fat, and water. Premium adds the AI food scan — snap a meal and get full macro breakdowns instantly." },
+  { q: "Does the app have community features?", a: "The Arena is a real, premium community. Post wins, ask questions, flex transformations, and compete for XP. Approved creators host drops and challenges directly inside it." },
+  { q: "When does it launch?", a: "We're in private beta now. Join the waitlist to lock in early access — first wave drops to early signups before public release." },
 ];
 
 export default function FAQSection() {

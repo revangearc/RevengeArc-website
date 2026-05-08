@@ -173,9 +173,9 @@ class TestAdminAuth:
         r = session.get(f"{BASE_URL}/api/admin/stats", headers=admin_headers)
         assert r.status_code == 200
         d = r.json()
-        for k in ["total_waitlist", "total_creators", "growth_14d", "device_split"]:
+        for k in ["total_waitlist", "total_creators", "growth", "device_split"]:
             assert k in d
-        assert isinstance(d["growth_14d"], list)
+        assert isinstance(d["growth"], list)
         assert "iPhone" in d["device_split"] and "Android" in d["device_split"]
 
 

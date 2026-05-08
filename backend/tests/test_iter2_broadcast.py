@@ -150,7 +150,7 @@ class TestEmailShell:
         assert INSTAGRAM_URL in html
         assert TIKTOK_URL in html
         assert DISCORD_URL in html
-        assert "support@revengearc.com" in html
+        assert "RevengeArkHelp@gmail.com" in html
         # Pills text
         assert "INSTAGRAM" in html
         assert "TIKTOK" in html

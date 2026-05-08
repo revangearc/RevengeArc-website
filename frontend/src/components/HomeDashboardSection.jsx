@@ -13,7 +13,8 @@ const features = [
 
 export default function HomeDashboardSection() {
   return (
-    <section id="dashboard" className="relative py-28 sm:py-36 overflow-hidden" data-testid="section-dashboard">
+    <section id="dashboard" className="relative pt-12 sm:pt-16 pb-24 sm:pb-32 overflow-hidden" data-testid="section-dashboard">
+      <div id="features" className="absolute -top-24" aria-hidden />
       <div className="orb orb-purple w-[500px] h-[500px] -top-20 -left-40 opacity-30" />
 
       <div className="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-12 items-center">

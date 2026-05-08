@@ -6,7 +6,7 @@ import { MOCKUPS } from "../lib/mockups";
 
 export default function Hero() {
   return (
-    <section id="top" className="relative min-h-screen pt-28 pb-20 overflow-hidden">
+    <section id="top" className="relative pt-28 pb-12 sm:pb-16 overflow-hidden">
       {/* Background orbs */}
       <div className="absolute inset-0 grid-bg opacity-60" />
       <div className="orb orb-purple w-[600px] h-[600px] -top-40 -left-40 opacity-40" />
@@ -71,16 +71,16 @@ export default function Hero() {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.55 }}
-            className="mt-12 grid grid-cols-3 gap-4 max-w-lg"
+            className="mt-12 grid grid-cols-3 gap-2.5 sm:gap-4 max-w-lg"
           >
             {[
               { v: "AI", l: "Powered" },
-              { v: "Cinematic", l: "Tracking" },
+              { v: "Smooth", l: "Tracking" },
               { v: "Built", l: "Different" },
             ].map((s, i) => (
-              <div key={i} className="glass rounded-2xl px-4 py-4">
-                <div className="font-display font-extrabold text-xl sm:text-2xl text-white">{s.v}</div>
-                <div className="text-[11px] tracking-[0.25em] text-white/45 mt-1">{s.l}</div>
+              <div key={i} className="glass rounded-2xl px-3 sm:px-4 py-3.5 sm:py-4 min-w-0">
+                <div className="font-display font-extrabold text-base sm:text-lg lg:text-xl text-white whitespace-nowrap">{s.v}</div>
+                <div className="text-[10px] sm:text-[11px] tracking-[0.2em] sm:tracking-[0.25em] text-white/45 mt-1 truncate">{s.l}</div>
               </div>
             ))}
           </motion.div>
@@ -126,14 +126,14 @@ export default function Hero() {
         </div>
       </div>
 
-      {/* Marquee strip */}
+      {/* Compact ribbon — directly transitions into dashboard, no dead space */}
       <motion.div
         initial={{ opacity: 0 }}
         animate={{ opacity: 1 }}
         transition={{ delay: 1.2, duration: 1 }}
-        className="relative mt-20 border-y border-white/8 bg-[#05050a]/60 overflow-hidden"
+        className="relative mt-14 sm:mt-16 border-y border-white/8 bg-[#05050a]/60 overflow-hidden"
       >
-        <div className="marquee py-4 text-xs font-bold tracking-[0.4em] text-white/35 uppercase">
+        <div className="marquee py-3.5 text-xs font-bold tracking-[0.4em] text-white/35 uppercase">
           {Array.from({ length: 2 }).map((_, k) => (
             <div key={k} className="flex items-center gap-10 px-6">
               {["Disciplined", "Cinematic", "AI Powered", "Built Different", "No Excuses", "Movement", "Earned Not Given", "Warrior Mode"].map((w, i) => (

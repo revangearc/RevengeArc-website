@@ -1,5 +1,6 @@
-import { Flame, Instagram } from "lucide-react";
-import { SOCIALS } from "../lib/mockups";
+import { Flame, Instagram, Mail } from "lucide-react";
+import { Link } from "react-router-dom";
+import { SOCIALS, SUPPORT_EMAIL } from "../lib/mockups";
 
 const TikTokIcon = (props) => (
   <svg {...props} viewBox="0 0 24 24" fill="currentColor" xmlns="http://www.w3.org/2000/svg">
@@ -19,9 +20,10 @@ const cols = [
     links: [
       { label: "Home Dashboard", href: "#dashboard" },
       { label: "Nutrition", href: "#nutrition" },
+      { label: "AI Food Scan", href: "#food-scan" },
       { label: "Gym Buddie AI", href: "#coach" },
       { label: "Workout Planner", href: "#workout" },
-      { label: "Combat Zone", href: "#combat" },
+      { label: "Pricing", href: "#pricing" },
     ],
   },
   {
@@ -37,11 +39,11 @@ const cols = [
   {
     title: "Legal",
     links: [
-      { label: "Terms of Service", href: "#" },
-      { label: "Privacy Policy", href: "#" },
-      { label: "Refund Policy", href: "#" },
-      { label: "Contact", href: "mailto:hello@revengearc.com" },
-      { label: "Support", href: "mailto:support@revengearc.com" },
+      { label: "Terms of Service", to: "/terms" },
+      { label: "Privacy Policy", to: "/privacy" },
+      { label: "Refund Policy", to: "/refund" },
+      { label: "Contact", to: "/contact" },
+      { label: "Support", to: "/support" },
     ],
   },
 ];
@@ -87,14 +89,18 @@ export default function Footer() {
               <ul className="space-y-2.5">
                 {col.links.map((l) => (
                   <li key={l.label}>
-                    <a
-                      href={l.href}
-                      target={l.external ? "_blank" : undefined}
-                      rel={l.external ? "noreferrer" : undefined}
-                      className="text-sm text-white/70 hover:text-white transition"
-                    >
-                      {l.label}
-                    </a>
+                    {l.to ? (
+                      <Link to={l.to} className="text-sm text-white/70 hover:text-white transition">{l.label}</Link>
+                    ) : (
+                      <a
+                        href={l.href}
+                        target={l.external ? "_blank" : undefined}
+                        rel={l.external ? "noreferrer" : undefined}
+                        className="text-sm text-white/70 hover:text-white transition"
+                      >
+                        {l.label}
+                      </a>
+                    )}
                   </li>
                 ))}
               </ul>
@@ -103,11 +109,16 @@ export default function Footer() {
 
           <div className="lg:col-span-1">
             <div className="text-[11px] tracking-[0.3em] text-white/45 font-bold mb-4">ADMIN</div>
-            <a href="/admin" className="text-sm text-white/70 hover:text-white transition" data-testid="footer-admin-link">Console</a>
+            <Link to="/admin" className="text-sm text-white/70 hover:text-white transition" data-testid="footer-admin-link">Console</Link>
           </div>
         </div>
 
-        <div className="mt-14 pt-6 border-t border-white/8 flex items-center justify-between flex-wrap gap-3">
+        <div className="mt-10 flex items-center gap-2 text-sm text-white/55">
+          <Mail className="h-4 w-4 text-purple-300" />
+          <a href={`mailto:${SUPPORT_EMAIL}`} className="hover:text-white transition" data-testid="footer-support-email">{SUPPORT_EMAIL}</a>
+        </div>
+
+        <div className="mt-6 pt-6 border-t border-white/8 flex items-center justify-between flex-wrap gap-3">
           <div className="text-xs text-white/40">© {new Date().getFullYear()} Revenge Arc. Built for warriors.</div>
           <div className="text-xs text-white/40 tracking-[0.3em]">DISCIPLINE · STREAKS · ARCS</div>
         </div>

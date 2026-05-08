@@ -20,12 +20,16 @@ apiClient.interceptors.request.use((config) => {
 export const joinWaitlist = (data) => apiClient.post("/waitlist", data);
 export const applyCreator = (data) => apiClient.post("/creator-applications", data);
 export const adminLogin = (password) => apiClient.post("/admin/login", { password });
-export const fetchStats = () => apiClient.get("/admin/stats");
+export const fetchStats = (range = "14d") => apiClient.get(`/admin/stats?range=${range}`);
 export const fetchWaitlist = () => apiClient.get("/admin/waitlist");
-export const fetchCreators = () => apiClient.get("/admin/creators");
+export const fetchCreators = (status) => apiClient.get(`/admin/creators${status ? `?status=${status}` : ""}`);
 export const approveCreator = (id) => apiClient.post(`/admin/creators/${id}/approve`);
 export const rejectCreator = (id) => apiClient.post(`/admin/creators/${id}/reject`);
 export const emailCreator = (id, payload) => apiClient.post(`/admin/creators/${id}/email`, payload);
 export const sendAnnouncement = (payload) => apiClient.post("/admin/announce", payload);
 export const fetchRecipientCounts = () => apiClient.get("/admin/recipient-counts");
 export const deleteWaitlist = (id) => apiClient.delete(`/admin/waitlist/${id}`);
+export const fetchTemplates = () => apiClient.get("/admin/templates");
+export const createTemplate = (data) => apiClient.post("/admin/templates", data);
+export const updateTemplate = (id, data) => apiClient.put(`/admin/templates/${id}`, data);
+export const deleteTemplate = (id) => apiClient.delete(`/admin/templates/${id}`);
