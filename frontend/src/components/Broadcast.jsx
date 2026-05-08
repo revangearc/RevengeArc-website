@@ -10,6 +10,7 @@ import {
   sendAnnouncement, fetchRecipientCounts, fetchTemplates, createTemplate,
   updateTemplate, deleteTemplate,
 } from "../lib/api";
+import { SUPPORT_EMAIL } from "../lib/mockups";
 
 const GROUPS = [
   { id: "waitlist", label: "Waitlist", icon: Users, accent: "purple", desc: "Everyone on the waitlist" },
@@ -383,7 +384,7 @@ function EmailPreview({ subject, html }) {
             </div>
             <div style={{ color: "#7a7a96", fontSize: "11px", lineHeight: 1.6 }}>
               You're receiving this because you joined the Revenge Arc movement.<br />
-              Need help? <a href="mailto:Revengearchelp@gmail.com" style={{ color: "#a855f7" }}>Revengearchelp@gmail.com</a><br />
+              Need help? <a href={`mailto:${SUPPORT_EMAIL}`} style={{ color: "#a855f7" }}>{SUPPORT_EMAIL}</a><br />
               <span style={{ color: "#a855f7", fontWeight: 700, letterSpacing: "3px" }}>THEREVENGE_ARC</span> · Built for warriors.
             </div>
           </div>
