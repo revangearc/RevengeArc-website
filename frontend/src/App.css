@@ -1,0 +1,7 @@
+/* App-level styles */
+.App {
+  min-height: 100vh;
+  background: #05050a;
+  color: #fff;
+  position: relative;
+}
