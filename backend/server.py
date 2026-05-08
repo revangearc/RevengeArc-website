@@ -99,6 +99,7 @@ class AdminLogin(BaseModel):
 class Announcement(BaseModel):
     subject: str = Field(..., min_length=1, max_length=200)
     html_content: str = Field(..., min_length=1)
+    recipient_group: Literal["waitlist", "creator_applicants", "approved_creators", "everyone"] = "waitlist"
 
 
 class CreatorEmail(BaseModel):
@@ -119,6 +120,11 @@ def require_admin(authorization: Optional[str] = Header(default=None)):
 
 # ===================== EMAIL HELPERS =====================
 
+INSTAGRAM_URL = "https://www.instagram.com/therevenge_arc/"
+TIKTOK_URL = "https://www.tiktok.com/@therevenge_arc"
+DISCORD_URL = "https://discord.gg/p95MCTsG"
+
+
 def _wrap_email(title: str, body_html: str, accent: str = "#a855f7") -> str:
     return f"""
 <!DOCTYPE html>
@@ -135,9 +141,23 @@ def _wrap_email(title: str, body_html: str, accent: str = "#a855f7") -> str:
         <tr><td style="padding:28px 32px;color:#cfcfe5;font-size:15px;line-height:1.7;">
           {body_html}
         </td></tr>
-        <tr><td style="padding:20px 32px 28px;border-top:1px solid rgba(168,85,247,0.18);color:#7a7a96;font-size:12px;">
-          You're receiving this because you joined the Revenge Arc movement.<br>
-          <span style="color:{accent}">therevenge_arc</span> &middot; Built for warriors.
+        <tr><td style="padding:24px 32px;border-top:1px solid rgba(168,85,247,0.18);">
+          <table role="presentation" width="100%" cellpadding="0" cellspacing="0">
+            <tr>
+              <td align="center" style="padding-bottom:16px;">
+                <a href="{INSTAGRAM_URL}" style="text-decoration:none;display:inline-block;margin:0 6px;padding:8px 14px;background:rgba(236,72,153,0.12);border:1px solid rgba(236,72,153,0.35);border-radius:999px;color:#f9a8d4;font-size:11px;font-weight:700;letter-spacing:2px;">INSTAGRAM</a>
+                <a href="{TIKTOK_URL}" style="text-decoration:none;display:inline-block;margin:0 6px;padding:8px 14px;background:rgba(34,211,238,0.12);border:1px solid rgba(34,211,238,0.35);border-radius:999px;color:#67e8f9;font-size:11px;font-weight:700;letter-spacing:2px;">TIKTOK</a>
+                <a href="{DISCORD_URL}" style="text-decoration:none;display:inline-block;margin:0 6px;padding:8px 14px;background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.35);border-radius:999px;color:#c4b5fd;font-size:11px;font-weight:700;letter-spacing:2px;">DISCORD</a>
+              </td>
+            </tr>
+            <tr>
+              <td style="color:#7a7a96;font-size:12px;line-height:1.6;text-align:center;">
+                You're receiving this because you joined the Revenge Arc movement.<br>
+                Need help? <a href="mailto:support@revengearc.com" style="color:{accent};text-decoration:none;">support@revengearc.com</a><br>
+                <span style="color:{accent};font-weight:700;letter-spacing:3px;">THEREVENGE_ARC</span> &middot; Built for warriors.
+              </td>
+            </tr>
+          </table>
         </td></tr>
       </table>
     </td></tr>
@@ -342,19 +362,54 @@ async def email_creator(creator_id: str, payload: CreatorEmail, _=Depends(requir
     return {"sent": True}
 
 
+async def _collect_recipients(group: str):
+    """Collect (email, full_name) pairs for a recipient group, deduplicated by email."""
+    seen = set()
+    out = []
+
+    async def _add_from(cursor):
+        async for r in cursor:
+            email = (r.get("email") or "").lower()
+            if email and email not in seen:
+                seen.add(email)
+                out.append({"email": email, "full_name": r.get("full_name") or "warrior"})
+
+    if group in ("waitlist", "everyone"):
+        await _add_from(db.waitlist.find({}, {"_id": 0, "email": 1, "full_name": 1}))
+    if group in ("creator_applicants", "everyone"):
+        await _add_from(db.creators.find({}, {"_id": 0, "email": 1, "full_name": 1}))
+    if group == "approved_creators":
+        await _add_from(db.creators.find({"status": "approved"}, {"_id": 0, "email": 1, "full_name": 1}))
+    return out
+
+
+@api_router.get("/admin/recipient-counts")
+async def admin_recipient_counts(_=Depends(require_admin)):
+    waitlist = await db.waitlist.count_documents({})
+    creator_applicants = await db.creators.count_documents({})
+    approved_creators = await db.creators.count_documents({"status": "approved"})
+    everyone_recipients = await _collect_recipients("everyone")
+    return {
+        "waitlist": waitlist,
+        "creator_applicants": creator_applicants,
+        "approved_creators": approved_creators,
+        "everyone": len(everyone_recipients),
+    }
+
+
 @api_router.post("/admin/announce")
 async def admin_announce(payload: Announcement, _=Depends(require_admin)):
-    rows = await db.waitlist.find({}, {"_id": 0, "email": 1, "full_name": 1}).to_list(50000)
+    recipients = await _collect_recipients(payload.recipient_group)
     sent = 0
     failed = 0
-    for r in rows:
-        body = f"<p>Hey <strong style=\"color:#fff\">{r.get('full_name','warrior')}</strong>,</p>" + payload.html_content
+    for r in recipients:
+        body = f"<p>Hey <strong style=\"color:#fff\">{r['full_name']}</strong>,</p>" + payload.html_content
         res = await send_email_async(r['email'], payload.subject, _wrap_email(payload.subject, body, "#a855f7"))
         if res:
             sent += 1
         else:
             failed += 1
-    return {"sent": sent, "failed": failed, "total": len(rows)}
+    return {"sent": sent, "failed": failed, "total": len(recipients), "group": payload.recipient_group}
 
 
 # Mount router

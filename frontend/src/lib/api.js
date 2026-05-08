@@ -27,4 +27,5 @@ export const approveCreator = (id) => apiClient.post(`/admin/creators/${id}/appr
 export const rejectCreator = (id) => apiClient.post(`/admin/creators/${id}/reject`);
 export const emailCreator = (id, payload) => apiClient.post(`/admin/creators/${id}/email`, payload);
 export const sendAnnouncement = (payload) => apiClient.post("/admin/announce", payload);
+export const fetchRecipientCounts = () => apiClient.get("/admin/recipient-counts");
 export const deleteWaitlist = (id) => apiClient.delete(`/admin/waitlist/${id}`);

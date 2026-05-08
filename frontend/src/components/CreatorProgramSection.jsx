@@ -123,7 +123,7 @@ export function Field({ label, hint, ...props }) {
       <span className="text-[11px] tracking-[0.25em] font-bold text-white/55">{label.toUpperCase()}{props.required && <span className="text-amber-400"> *</span>}</span>
       <input
         {...props}
-        className="mt-1.5 w-full h-11 px-4 rounded-xl bg-white/4 border border-white/10 focus:border-purple-500/60 focus:bg-white/6 outline-none text-white placeholder:text-white/30 transition"
+        className="ra-input mt-1.5"
         data-testid={`input-${props.name || props.label?.toLowerCase().replace(/\s+/g, "-")}`}
       />
       {hint && <span className="text-[10px] text-white/40 mt-1 inline-block">{hint}</span>}
@@ -141,7 +141,7 @@ export function Textarea({ label, value, onChange, rows = 4, placeholder = "", r
         rows={rows}
         required={required}
         placeholder={placeholder}
-        className="mt-1.5 w-full px-4 py-3 rounded-xl bg-white/4 border border-white/10 focus:border-purple-500/60 outline-none text-white placeholder:text-white/30 transition resize-none"
+        className="ra-textarea mt-1.5"
         data-testid={`textarea-${label.toLowerCase().replace(/\s+/g, "-")}`}
       />
     </label>

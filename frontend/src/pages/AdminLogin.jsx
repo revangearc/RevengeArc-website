@@ -67,7 +67,7 @@ export default function AdminLogin() {
               onChange={(e) => setPassword(e.target.value)}
               required
               autoFocus
-              className="mt-2 w-full h-12 px-4 rounded-xl bg-white/4 border border-white/10 focus:border-purple-500/60 outline-none text-white placeholder:text-white/30 transition"
+              className="ra-input mt-2 !h-12"
               placeholder="••••••••"
               data-testid="admin-password-input"
             />

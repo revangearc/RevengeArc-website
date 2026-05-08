@@ -330,5 +330,63 @@ body {
 /* Hide debug wrapper sizing */
 [data-debug-wrapper="true"] { display: contents !important; }
 
+/* Hide Emergent platform badge */
+a[href*="emergent.sh"],
+a[href*="emergent.com"],
+[class*="emergent-badge"],
+[id*="emergent-badge"],
+[class*="MadeWithEmergent"],
+[class*="made-with-emergent"],
+.made-with-emergent,
+#made-with-emergent {
+  display: none !important;
+  visibility: hidden !important;
+  opacity: 0 !important;
+  pointer-events: none !important;
+}
+
+/* === FORM INPUTS — readable text on premium light card === */
+.ra-input,
+.ra-textarea {
+  width: 100%;
+  background: rgba(245, 245, 250, 0.96);
+  color: #0a0a14;
+  caret-color: #6d28d9;
+  border: 1px solid rgba(168, 85, 247, 0.35);
+  border-radius: 12px;
+  padding: 0 16px;
+  font-size: 15px;
+  font-weight: 500;
+  outline: none;
+  transition: border-color 0.2s ease, box-shadow 0.2s ease, background 0.2s ease;
+}
+.ra-input { height: 44px; }
+.ra-textarea {
+  padding: 12px 16px;
+  resize: none;
+  line-height: 1.55;
+}
+.ra-input::placeholder,
+.ra-textarea::placeholder {
+  color: #6b7280;
+  font-weight: 400;
+}
+.ra-input:focus,
+.ra-textarea:focus {
+  background: #ffffff;
+  border-color: rgba(168, 85, 247, 0.75);
+  box-shadow: 0 0 0 3px rgba(168, 85, 247, 0.18), 0 0 22px rgba(168, 85, 247, 0.25);
+}
+/* Override browser autofill which forces white bg + blue text */
+.ra-input:-webkit-autofill,
+.ra-textarea:-webkit-autofill,
+.ra-input:-webkit-autofill:hover,
+.ra-input:-webkit-autofill:focus {
+  -webkit-text-fill-color: #0a0a14 !important;
+  -webkit-box-shadow: 0 0 0 1000px #f5f5fa inset !important;
+  caret-color: #6d28d9;
+  transition: background-color 5000s ease-in-out 0s;
+}
+
 /* No transition on theme switch */
 .no-flash { color-scheme: dark; }

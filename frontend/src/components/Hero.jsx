@@ -74,12 +74,12 @@ export default function Hero() {
             className="mt-12 grid grid-cols-3 gap-4 max-w-lg"
           >
             {[
-              { v: "124K+", l: "Warriors" },
-              { v: "9.6", l: "App Score" },
               { v: "AI", l: "Powered" },
+              { v: "Cinematic", l: "Tracking" },
+              { v: "Built", l: "Different" },
             ].map((s, i) => (
               <div key={i} className="glass rounded-2xl px-4 py-4">
-                <div className="font-display font-extrabold text-2xl sm:text-3xl text-white">{s.v}</div>
+                <div className="font-display font-extrabold text-xl sm:text-2xl text-white">{s.v}</div>
                 <div className="text-[11px] tracking-[0.25em] text-white/45 mt-1">{s.l}</div>
               </div>
             ))}

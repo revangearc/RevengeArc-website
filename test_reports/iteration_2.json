@@ -1,0 +1,41 @@
+{
+  "summary": "Iteration 2 full E2E backend + frontend testing of Revenge Arc post-redesign. 27/27 pytest cases pass (19 baseline + 8 new for /api/admin/recipient-counts, /api/admin/announce with recipient_group, _wrap_email shell). Frontend verified: hero stats now honest (AI/Cinematic/Built — no 124K, 9.6, App Score), Arena headline is 'Built for warriors. One movement.', Emergent badge hidden on / and /admin/dashboard, all forms (waitlist, creator, admin password, broadcast subject, broadcast body) render dark text rgb(10,10,20) on light bg rgba(245,245,250,0.96), TikTok footer icon now 20x20 inside 44x44 button matching Instagram & Discord, admin Broadcast tab fully functional with 4 recipient cards (counts 7/13/3/19), 9 toolbar buttons, live email preview with INSTAGRAM/TIKTOK/DISCORD pills, confirmation modal opens on Send, Cancel and X both close it.",
+  "backend_issues": {
+    "critical": [],
+    "minor": [
+      {"endpoint": "/api/admin/announce", "issue": "When Resend API key is in test mode and recipient is unverified, individual sends count toward 'failed'. Not a bug — UI surfaces the failed count, this is expected."}
+    ]
+  },
+  "frontend_issues": {
+    "ui_bugs": [],
+    "integration_issues": [],
+    "design_issues": []
+  },
+  "test_report_links": [
+    "/app/backend/tests/test_revenge_arc_api.py",
+    "/app/backend/tests/test_iter2_broadcast.py",
+    "/app/test_reports/pytest/pytest_results.xml",
+    "/app/test_reports/pytest/iter2_results.xml"
+  ],
+  "action_items": [],
+  "critical_code_review_comments": [
+    "Footer.jsx had `h-4.5 w-4.5` Tailwind class on TikTokIcon which is NOT a valid Tailwind size (no .h-4.5 or .w-4.5 utility), causing the SVG to ignore the size constraint and render at intrinsic 42x42 inside the 44x44 button while IG/DC SVGs were 20x20. Fixed in this iteration to `h-5 w-5`. Recommend lint rule for Tailwind class validation (e.g., eslint-plugin-tailwindcss with arbitrary-value=false).",
+    "Broadcast.jsx insertAtCursor is robust but uses dangerouslySetInnerHTML in EmailPreview without sanitization — acceptable since only admin-authored content is rendered, but document this trust boundary.",
+    "_collect_recipients dedupe is correct (set of lowercased emails). Verified via test_announce_everyone_dedupes with seeded shared email — total recipients == /api/admin/recipient-counts.everyone.",
+    "Backend iterates emails sequentially via await; for groups >1k recipients consider asyncio.gather with semaphore (carry-over from iter1).",
+    "All MongoDB projections exclude _id. ✅",
+    "All env vars sourced correctly; no hardcoded URLs. ✅",
+    "data-testid attributes present on all new Broadcast UI: recipient-{group}, toolbar-{action}, broadcast-subject, broadcast-body, broadcast-send-btn, broadcast-confirm-modal, broadcast-confirm-btn, email-preview. ✅"
+  ],
+  "updated_files": [
+    "/app/frontend/src/components/Footer.jsx (TikTokIcon className h-4.5 w-4.5 -> h-5 w-5)",
+    "/app/backend/tests/test_iter2_broadcast.py (new — 8 pytest cases for iter2 endpoints + email shell)"
+  ],
+  "success_rate": {"backend": "100% (27/27)", "frontend": "100%"},
+  "test_credentials": "Admin password: RevengeArc2026! (from /app/memory/test_credentials.md)",
+  "seed_data_creation": "Created TEST2_-prefixed waitlist + creator-application entries during dedupe verification. One email seeded into both collections to assert /admin/announce 'everyone' deduplication (total recipients == counts.everyone). Triggered TEST2 broadcasts to waitlist/creator_applicants/approved_creators/everyone groups (Resend may log failures for unverified recipients in test mode — expected).",
+  "retest_needed": false,
+  "main_agent_can_self_test": true,
+  "context_for_next_testing_agent": "Backend regression at /app/backend/tests/test_revenge_arc_api.py (19 cases, baseline) and /app/backend/tests/test_iter2_broadcast.py (8 cases, broadcast/email-shell) both passing. New endpoints: GET /api/admin/recipient-counts -> {waitlist, creator_applicants, approved_creators, everyone}; POST /api/admin/announce now requires recipient_group ∈ {waitlist, creator_applicants, approved_creators, everyone}. Email shell _wrap_email() includes Instagram/TikTok/Discord links + support@revengearc.com mailto. Frontend Broadcast component lives at /app/frontend/src/components/Broadcast.jsx with full toolbar, live preview, confirmation modal. Use unique TEST2_-prefixed emails for any new tests to avoid 409 collisions.",
+  "rca of the issue": "TikTok icon oversized: Tailwind doesn't ship `h-4.5`/`w-4.5` utilities by default. Class string was silently dropped, SVG rendered at viewBox-derived 42x42, while sibling Instagram (lucide-react) and Discord (custom SVG) used valid `h-5 w-5` (20px). Fix: replace with `h-5 w-5`. Verified after fix: all three SVGs measure 20x20 inside identical 44x44 buttons."
+}

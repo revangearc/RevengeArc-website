@@ -3,13 +3,14 @@ import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
 import {
   Flame, LogOut, Users, Trophy, Mail, BarChart3, Search, Check, X, Loader2,
-  Send, Trash2, Smartphone, ChevronRight, Eye, AlertCircle,
+  Send, Trash2, Smartphone, Eye, AlertCircle,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
   fetchStats, fetchWaitlist, fetchCreators, approveCreator, rejectCreator,
-  emailCreator, sendAnnouncement, deleteWaitlist, getToken, clearToken,
+  emailCreator, deleteWaitlist, getToken, clearToken,
 } from "../lib/api";
+import Broadcast from "../components/Broadcast";
 
 const TABS = [
   { id: "overview", label: "Overview", icon: BarChart3 },
@@ -107,12 +108,12 @@ export default function AdminDashboard() {
           ))}
           {(tab === "waitlist" || tab === "creators") && (
             <div className="ml-auto relative w-full sm:w-72 hidden sm:block">
-              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-white/40" />
+              <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 z-10" />
               <input
                 value={search}
                 onChange={(e) => setSearch(e.target.value)}
                 placeholder="Search name or email..."
-                className="w-full h-10 pl-10 pr-3 rounded-full bg-white/4 border border-white/10 focus:border-purple-500/50 outline-none text-sm placeholder:text-white/30"
+                className="ra-input !h-10 !pl-10 !text-sm"
                 data-testid="admin-search"
               />
             </div>
@@ -373,49 +374,13 @@ function EmailCreator({ id, onSend }) {
   return (
     <form onSubmit={submit} className="rounded-xl border border-purple-500/25 bg-purple-500/5 p-4 space-y-3">
       <div className="text-[10px] tracking-[0.3em] text-purple-300 font-bold">SEND CUSTOM EMAIL</div>
-      <input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject" required className="w-full h-10 px-3 rounded-lg bg-white/4 border border-white/10 outline-none text-sm" />
-      <textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="HTML allowed. <p>Hey there...</p>" required rows={4} className="w-full px-3 py-2 rounded-lg bg-white/4 border border-white/10 outline-none text-sm resize-none" />
+      <input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject" required className="ra-input !h-10 !text-sm" />
+      <textarea value={body} onChange={(e) => setBody(e.target.value)} placeholder="HTML allowed. <p>Hey there...</p>" required rows={4} className="ra-textarea !text-sm" />
       <button type="submit" disabled={sending} className="btn-primary !py-2 !px-4 !text-xs">
         {sending ? <Loader2 className="h-3.5 w-3.5 animate-spin" /> : <Send className="h-3.5 w-3.5" />}
         Send Email
       </button>
     </form>
-  );
-}
-
-function Broadcast() {
-  const [subject, setSubject] = useState("");
-  const [html, setHtml] = useState("");
-  const [sending, setSending] = useState(false);
-  const submit = async (e) => {
-    e.preventDefault();
-    if (!window.confirm("Send to ALL waitlist members?")) return;
-    setSending(true);
-    try {
-      const res = await sendAnnouncement({ subject, html_content: html });
-      toast.success(`Sent to ${res.data.sent} of ${res.data.total} (failed: ${res.data.failed})`);
-      setSubject(""); setHtml("");
-    } catch (err) {
-      toast.error("Broadcast failed");
-    } finally {
-      setSending(false);
-    }
-  };
-  return (
-    <motion.form initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} onSubmit={submit} className="glass rounded-2xl p-6 space-y-4 max-w-2xl">
-      <div>
-        <div className="text-[10px] tracking-[0.3em] text-white/55 font-bold">BROADCAST</div>
-        <div className="font-display font-extrabold text-2xl mt-1">Send announcement to all waitlist members</div>
-        <p className="text-sm text-white/55 mt-1">Use HTML for formatting. The Revenge Arc email shell wraps automatically.</p>
-      </div>
-      <input value={subject} onChange={(e) => setSubject(e.target.value)} placeholder="Subject line" required className="w-full h-11 px-4 rounded-xl bg-white/4 border border-white/10 focus:border-purple-500/50 outline-none" data-testid="broadcast-subject" />
-      <textarea value={html} onChange={(e) => setHtml(e.target.value)} placeholder="<p>The wait is over. Revenge Arc is now live...</p>" required rows={10} className="w-full px-4 py-3 rounded-xl bg-white/4 border border-white/10 focus:border-purple-500/50 outline-none resize-none font-mono text-sm" data-testid="broadcast-body" />
-      <button type="submit" disabled={sending} className="btn-primary" data-testid="broadcast-send-btn">
-        {sending ? <Loader2 className="h-4 w-4 animate-spin" /> : <Send className="h-4 w-4" />}
-        {sending ? "Sending..." : "Send to All Waitlist"}
-        <ChevronRight className="h-4 w-4" />
-      </button>
-    </motion.form>
   );
 }
 
