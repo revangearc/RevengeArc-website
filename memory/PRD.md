@@ -1,20 +1,22 @@
 # Revenge Arc — PRD
 
 ## Original Problem Statement
-Cinematic AI self-improvement website + admin + backend + Resend email system. Iteration 3 expanded scope significantly: pricing section, dedicated AI Food Scan, legal pages, admin time-range stats, creator status filters + view modal, broadcast recipient types (incl. iPhone/Android/Custom), email templates CRUD, sender domain swap (no-reply@revengearc.com), removal of compensation_type field.
+Cinematic AI self-improvement website + admin + Resend email system for a fitness/discipline app called "Revenge Arc". Premium dark-neon UI with Framer Motion animations across 10+ feature sections matching app mockups (Hero, Dashboard, Nutrition, Gym Buddie AI, Workout, Arena, Progress Hub, Profile, Combat Zone, AI Food Scan, Pricing, FAQ). Includes Waitlist, Creator Application program, Legal pages, and a robust Admin Console (auth, stats, waitlist/creator management, rich-text Broadcast email editor).
 
 ## User Personas
-- Warrior (visitor) — wants early access, joins waitlist, may apply as creator
-- Creator — applies via creator program, gets approved/rejected
-- Admin (operator) — manages waitlist, creators, broadcasts, templates
+- Warrior (visitor) — joins waitlist, may apply as creator
+- Creator — applies via creator program, awaits approval
+- Admin — manages waitlist, creators, broadcasts, templates, signatures
 
 ## Architecture
-- **Frontend**: React 19 + Tailwind + Shadcn/UI + motion + lucide-react. Routes: `/`, `/admin`, `/admin/dashboard`, `/terms`, `/privacy`, `/refund`, `/contact`, `/support`.
-- **Backend**: FastAPI + Motor (MongoDB) + Resend SDK. All routes `/api/*`.
-- **Email**: Resend with verified custom sender `no-reply@revengearc.com` (domain `revengearc.com`). Support email `RevengeArkHelp@gmail.com` injected into shell + footer.
-- **Auth**: Admin password (env `ADMIN_PASSWORD`) → static bearer token (env `ADMIN_TOKEN`).
+- **Frontend**: React 19 + Tailwind + Shadcn/UI + motion + lucide-react.
+  Routes: `/`, `/admin`, `/admin/dashboard`, `/terms`, `/privacy`, `/refund`, `/contact`, `/support`.
+- **Backend**: FastAPI + Motor (MongoDB) + Resend SDK. All routes under `/api/*`.
+- **Email**: Resend with verified custom sender `no-reply@revengearc.com`.
+  Support email: `Revengearchelp@gmail.com`.
+- **Auth**: Admin password → static bearer token (env `ADMIN_TOKEN`).
 
-## Implemented (Feb 2026)
+## Implemented Iterations
 
 ### Iteration 1 (MVP)
 - Cinematic landing with 13 sections + waitlist + creator program + admin
@@ -22,28 +24,36 @@ Cinematic AI self-improvement website + admin + backend + Resend email system. I
 ### Iteration 2 (polish)
 - Removed Emergent badge, fake numbers, fixed input readability, TikTok icon, broadcast upgrade
 
-### Iteration 3 (this iteration)
-- ✅ Sender swapped from `onboarding@resend.dev` → `no-reply@revengearc.com` (verified domain)
-- ✅ Email shell adds Instagram/TikTok/Discord pills + `RevengeArkHelp@gmail.com` support line
-- ✅ Navbar: Features dropdown (9 features, smooth-scroll) + Pricing + Creators + FAQ
-- ✅ Hero dead-space removed, stat cards responsive, ribbon transitions directly into dashboard
-- ✅ AI Food Scan dedicated section with Honey Wings mockup + 5 feature cards
-- ✅ Pricing section (Free $0 + Premium $15.99/mo or $115.99/yr from $191.88, save 40%)
-- ✅ Creator form: removed `compensation_type`, kept `desired_pay` with new placeholder
-- ✅ FAQ rewritten with 9 product-specific questions
-- ✅ Legal pages: Terms, Privacy, Refund, Contact, Support — all themed
-- ✅ Footer: support email + internal links to all legal pages
-- ✅ Admin Overview: 8-range time selector (24h/2d/7d/14d/30d/3mo/6mo/1y) + animated SVG growth chart with waitlist + creators series
-- ✅ Admin Creators: 4 status filters (All/Pending/Approved/Rejected) + full View modal with every answer + dedicated "Send Email" button
-- ✅ Admin Broadcast: 7 recipient groups (waitlist / creator_applicants / approved_creators / iphone_users / android_users / everyone / custom)
-- ✅ Custom recipients: chip input (Enter/comma/space to add, backspace to remove)
-- ✅ Email templates CRUD: save/load/update/delete persistent templates
-- ✅ "Send Email" from creator card → `/admin/dashboard?tab=broadcast&recipients=<email>` prefill
-- ✅ Premium toasts (sonner richColors + custom Revenge Arc styling)
-- ✅ Backend tests: 52/52 passing
+### Iteration 3
+- Sender swap to verified `no-reply@revengearc.com`
+- Navbar Features dropdown + Pricing/Creators/FAQ
+- AI Food Scan dedicated section
+- Pricing section
+- Legal pages (Terms/Privacy/Refund/Contact/Support)
+- Admin time-range stats (8 ranges) + animated growth chart
+- Creator status filters + View modal
+- Broadcast 7 recipient groups, custom chip input, template CRUD
+
+### Iteration 4
+- Email dark-mode-proof shell, mobile layout polish, password change, support email spelling fix
+
+### Iteration 5 (Feb 2026 — this session)
+- ✅ **Backend**: bulk-delete (`POST /api/admin/{waitlist|creators}/bulk-delete`), delete-all (`DELETE /api/admin/{waitlist|creators}`) both requiring literal `confirmation="DELETE"`
+- ✅ **Backend**: creator status change (`POST /api/admin/creators/{id}/status`) accepts pending/approved/rejected
+- ✅ **Backend**: custom-recipient autocomplete (`GET /api/admin/users/search?q=`) merging waitlist + creators with source tag, capped at 20, min 2 chars
+- ✅ **Backend**: Signature CRUD (`/api/admin/signatures` GET/POST/PUT/DELETE) with auto-seeded "Revenge Arc Original" + 409 on duplicate name
+- ✅ **Frontend Admin**: multi-select checkboxes on Waitlist + Creators rows, "Select all"/"Clear", "Delete selected"/"Delete all" buttons, double-confirmation modal requiring exact `DELETE`
+- ✅ **Frontend Admin**: creator Change Status dropdown (re-route approved↔rejected↔pending)
+- ✅ **Frontend Admin**: chart hover tooltip showing Date / Waitlist count / Creator count with dark glass styling
+- ✅ **Frontend Broadcast**: replaced raw chip input with autocomplete search (debounced 220ms) showing avatar/source/handles/status, keyboard nav, fallback to plain-email Enter
+- ✅ **Frontend Broadcast**: Signature CRUD panel (new/edit/delete) with HTML editor + live preview; click-to-insert at cursor
+- ✅ **SectionHeader**: 7 unique animation variants (`fade`/`slide-left`/`slide-right`/`swoop`/`rise`/`zoom`/`float`) — one per landing section for cinematic differentiation
+- ✅ **Tested**: 89/90 backend regression pass + 100% iter5 frontend Playwright pass; only flake is environmental Resend quota
 
 ## Backlog (P1)
-- Server.py is approaching 600 lines; split into routes/admin.py, routes/public.py, email/renderer.py modules
+- Split `server.py` (currently 819 lines) → `routes/admin.py`, `routes/public.py`, `email/template.py`
+- Extract `DeleteConfirmModal` / `StatusMenu` / `GrowthChart` from AdminDashboard.jsx (~800 lines) into separate files
+- Extract `CustomRecipientPicker` / `EmailPreview` from Broadcast.jsx (~624 lines)
 - Migrate FastAPI deprecated `@app.on_event("shutdown")` to lifespan handler
 - Live Gym Buddie AI chat (Universal LLM key — Claude Sonnet 4.5)
 
@@ -51,10 +61,10 @@ Cinematic AI self-improvement website + admin + backend + Resend email system. I
 - Creator duplicate-application guard
 - ADMIN_TOKEN → JWT with expiry & refresh
 - Broadcast: concurrent send via `asyncio.gather` + semaphore for 50k+ lists
-- Admin: bulk approve/reject creators
 - Email open/click tracking via Resend webhooks
+- Rename Gym Buddie section anchor `id='coach'` → `id='gym-buddie'` for consistency
 
 ## Credentials
-- Admin password: `RevengeArc2026!` (also `/app/memory/test_credentials.md`)
+- Admin password: `Bashar1212` (also `/app/memory/test_credentials.md`)
 - Sender: `no-reply@revengearc.com` (Resend verified domain `revengearc.com`)
-- Support: `RevengeArkHelp@gmail.com`
+- Support: `Revengearchelp@gmail.com`
