@@ -1,11 +1,12 @@
 import { useState, useEffect } from "react";
 import { useNavigate, Link } from "react-router-dom";
 import { motion } from "motion/react";
-import { Flame, Loader2, Lock, ArrowRight } from "lucide-react";
+import { Flame, Loader2, Lock, ArrowRight, Mail } from "lucide-react";
 import { toast } from "sonner";
 import { adminLogin, setToken, getToken } from "../lib/api";
 
 export default function AdminLogin() {
+  const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
   const navigate = useNavigate();
@@ -16,14 +17,19 @@ export default function AdminLogin() {
 
   const onSubmit = async (e) => {
     e.preventDefault();
+    if (!email.trim() || !password) {
+      toast.error("Email and password required");
+      return;
+    }
     setLoading(true);
     try {
-      const res = await adminLogin(password);
+      const res = await adminLogin(email.trim(), password);
       setToken(res.data.token);
       toast.success("Welcome back, commander.");
       navigate("/admin/dashboard");
     } catch (err) {
-      toast.error("Invalid admin password");
+      const msg = err?.response?.data?.detail || "Invalid email or password";
+      toast.error(typeof msg === "string" ? msg : "Login failed");
     } finally {
       setLoading(false);
     }
@@ -56,17 +62,35 @@ export default function AdminLogin() {
           <span className="text-[11px] tracking-[0.3em] font-bold text-purple-200">RESTRICTED</span>
         </div>
         <h1 className="font-display font-extrabold text-3xl">Sign in</h1>
-        <p className="text-white/55 text-sm mt-1.5">Enter the master password to access the console.</p>
+        <p className="text-white/55 text-sm mt-1.5">Enter your admin email and password to access the console.</p>
 
         <form onSubmit={onSubmit} className="mt-7 space-y-4" data-testid="admin-login-form">
           <label className="block">
-            <span className="text-[11px] tracking-[0.25em] font-bold text-white/55">PASSWORD</span>
+            <span className="text-[11px] tracking-[0.25em] font-bold text-white/55 flex items-center gap-1.5">
+              <Mail className="h-3 w-3" /> EMAIL
+            </span>
+            <input
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              required
+              autoFocus
+              autoComplete="off"
+              className="ra-input mt-2 !h-12"
+              placeholder="admin@yourdomain.com"
+              data-testid="admin-email-input"
+            />
+          </label>
+          <label className="block">
+            <span className="text-[11px] tracking-[0.25em] font-bold text-white/55 flex items-center gap-1.5">
+              <Lock className="h-3 w-3" /> PASSWORD
+            </span>
             <input
               type="password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
               required
-              autoFocus
+              autoComplete="off"
               className="ra-input mt-2 !h-12"
               placeholder="••••••••"
               data-testid="admin-password-input"

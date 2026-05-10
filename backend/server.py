@@ -26,7 +26,9 @@ SENDER_NAME = os.environ.get('SENDER_NAME', 'Revenge Arc')
 SUPPORT_EMAIL = os.environ.get('SUPPORT_EMAIL', 'Revengearchelp@gmail.com')
 FROM_FIELD = f"{SENDER_NAME} <{SENDER_EMAIL}>"
 ADMIN_PASSWORD = os.environ.get('ADMIN_PASSWORD', 'changeme')
+ADMIN_EMAIL = os.environ.get('ADMIN_EMAIL', '').lower().strip()
 ADMIN_TOKEN = os.environ.get('ADMIN_TOKEN', 'admin-token')
+BROADCAST_CONCURRENCY = int(os.environ.get('BROADCAST_CONCURRENCY', '8'))
 
 INSTAGRAM_URL = "https://www.instagram.com/therevenge_arc/"
 TIKTOK_URL = "https://www.tiktok.com/@therevenge_arc"
@@ -93,6 +95,7 @@ class CreatorEntry(BaseModel):
 
 
 class AdminLogin(BaseModel):
+    email: EmailStr
     password: str
 
 
@@ -245,15 +248,40 @@ def _wrap_email(title: str, body_html: str, accent: str = "#a855f7") -> str:
 """
 
 
-async def send_email_async(to: str, subject: str, html: str):
+async def _log_email(*, to: str, subject: str, audience: str = "single", status: str = "sent", error: Optional[str] = None, resend_id: Optional[str] = None):
+    """Persist a single email send record for tracking + audit."""
+    doc = {
+        "id": str(uuid.uuid4()),
+        "to": to,
+        "subject": subject,
+        "audience": audience,
+        "status": status,
+        "error": error or "",
+        "resend_id": resend_id or "",
+        "sent_at": datetime.now(timezone.utc).isoformat(),
+    }
+    try:
+        await db.email_logs.insert_one(doc)
+    except Exception as e:
+        logger.warning(f"email_log insert failed: {e}")
+
+
+async def send_email_async(to: str, subject: str, html: str, audience: str = "single"):
     if not resend.api_key:
         logger.warning("RESEND_API_KEY not configured; skipping email to %s", to)
+        await _log_email(to=to, subject=subject, audience=audience, status="skipped", error="RESEND_API_KEY not configured")
         return None
     params = {"from": FROM_FIELD, "to": [to], "subject": subject, "html": html}
     try:
-        return await asyncio.to_thread(resend.Emails.send, params)
+        res = await asyncio.to_thread(resend.Emails.send, params)
+        rid = ""
+        if isinstance(res, dict):
+            rid = res.get("id") or ""
+        await _log_email(to=to, subject=subject, audience=audience, status="sent", resend_id=rid)
+        return res
     except Exception as e:
         logger.error(f"Resend send failed for {to}: {e}")
+        await _log_email(to=to, subject=subject, audience=audience, status="failed", error=str(e)[:500])
         return None
 
 
@@ -315,6 +343,9 @@ async def join_waitlist(payload: WaitlistCreate):
 async def apply_creator(payload: CreatorCreate):
     if not (payload.instagram.strip() or payload.tiktok.strip()):
         raise HTTPException(status_code=422, detail="Instagram or TikTok handle is required (at least one).")
+    existing = await db.creators.find_one({"email": payload.email.lower()}, {"_id": 0})
+    if existing:
+        raise HTTPException(status_code=409, detail="This email has already been used for a creator application.")
     entry = CreatorEntry(
         id=str(uuid.uuid4()),
         full_name=payload.full_name.strip(),
@@ -353,8 +384,9 @@ async def apply_creator(payload: CreatorCreate):
 # ----- Admin Auth -----
 @api_router.post("/admin/login")
 async def admin_login(payload: AdminLogin):
-    if payload.password != ADMIN_PASSWORD:
-        raise HTTPException(status_code=401, detail="Invalid password")
+    email_match = (not ADMIN_EMAIL) or (payload.email.lower().strip() == ADMIN_EMAIL)
+    if not email_match or payload.password != ADMIN_PASSWORD:
+        raise HTTPException(status_code=401, detail="Invalid email or password")
     return {"token": ADMIN_TOKEN}
 
 
@@ -584,18 +616,41 @@ async def admin_announce(payload: Announcement, _=Depends(require_admin)):
     recipients = await _collect_recipients(payload.recipient_group, payload.custom_recipients)
     if payload.recipient_group == "custom" and not recipients:
         raise HTTPException(status_code=422, detail="No valid custom recipients provided.")
+
+    semaphore = asyncio.Semaphore(BROADCAST_CONCURRENCY)
+
+    async def _one(r):
+        async with semaphore:
+            body = f"<p>Hey <strong style=\"color:#fff\">{r['full_name']}</strong>,</p>" + payload.html_content
+            res = await send_email_async(
+                r['email'], payload.subject,
+                _wrap_email(payload.subject, body, "#a855f7"),
+                audience=payload.recipient_group,
+            )
+            return (r['email'], bool(res))
+
+    results = await asyncio.gather(*[_one(r) for r in recipients], return_exceptions=True)
     sent = 0
     failed = 0
     failures = []
-    for r in recipients:
-        body = f"<p>Hey <strong style=\"color:#fff\">{r['full_name']}</strong>,</p>" + payload.html_content
-        res = await send_email_async(r['email'], payload.subject, _wrap_email(payload.subject, body, "#a855f7"))
-        if res:
+    for item in results:
+        if isinstance(item, Exception):
+            failed += 1
+            continue
+        email, ok = item
+        if ok:
             sent += 1
         else:
             failed += 1
-            failures.append(r['email'])
-    return {"sent": sent, "failed": failed, "total": len(recipients), "group": payload.recipient_group, "failed_emails": failures[:5]}
+            failures.append(email)
+    return {
+        "sent": sent,
+        "failed": failed,
+        "total": len(recipients),
+        "group": payload.recipient_group,
+        "failed_emails": failures[:5],
+        "concurrency": BROADCAST_CONCURRENCY,
+    }
 
 
 # ----- Email Templates -----
@@ -801,6 +856,44 @@ async def search_users(q: str = Query(default="", min_length=0, max_length=120),
     await _scan(db.waitlist.find({"$or": or_clause}, {"_id": 0}).limit(20), "waitlist")
     await _scan(db.creators.find({"$or": or_clause}, {"_id": 0}).limit(20), "creator")
     return {"results": results[:20]}
+
+
+# ----- Email tracking / logs -----
+
+@api_router.get("/admin/email-logs")
+async def admin_email_logs(
+    limit: int = Query(default=100, ge=1, le=500),
+    status_filter: Optional[str] = Query(default=None, alias="status", pattern="^(sent|failed|skipped)$"),
+    audience: Optional[str] = Query(default=None, max_length=60),
+    q: Optional[str] = Query(default=None, max_length=200),
+    _=Depends(require_admin),
+):
+    query: dict = {}
+    if status_filter:
+        query["status"] = status_filter
+    if audience:
+        query["audience"] = audience
+    if q:
+        pattern = {"$regex": q.replace(".", r"\."), "$options": "i"}
+        query["$or"] = [{"to": pattern}, {"subject": pattern}]
+    rows = await db.email_logs.find(query, {"_id": 0}).sort("sent_at", -1).to_list(limit)
+    total = await db.email_logs.count_documents({})
+    sent_total = await db.email_logs.count_documents({"status": "sent"})
+    failed_total = await db.email_logs.count_documents({"status": "failed"})
+    return {
+        "logs": rows,
+        "total": total,
+        "sent_total": sent_total,
+        "failed_total": failed_total,
+    }
+
+
+@api_router.delete("/admin/email-logs")
+async def admin_clear_email_logs(payload: DeleteAll, _=Depends(require_admin)):
+    if payload.confirmation != "DELETE":
+        raise HTTPException(status_code=422, detail="Confirmation must be 'DELETE' (all caps).")
+    res = await db.email_logs.delete_many({})
+    return {"deleted": res.deleted_count}
 
 
 # Mount

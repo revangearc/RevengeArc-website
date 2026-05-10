@@ -21,7 +21,7 @@ const cols = [
       { label: "Home Dashboard", href: "#dashboard" },
       { label: "Nutrition", href: "#nutrition" },
       { label: "AI Food Scan", href: "#food-scan" },
-      { label: "Gym Buddie AI", href: "#coach" },
+      { label: "Gym Buddie AI", href: "#gym-buddie" },
       { label: "Workout Planner", href: "#workout" },
       { label: "Pricing", href: "#pricing" },
     ],

@@ -26,7 +26,7 @@ const prompts = [
 
 export default function GymBuddieSection() {
   return (
-    <section id="coach" className="relative py-28 sm:py-36 overflow-hidden" data-testid="section-coach">
+    <section id="gym-buddie" className="relative py-28 sm:py-36 overflow-hidden" data-testid="section-gym-buddie">
       <div className="orb orb-purple w-[600px] h-[600px] top-0 -left-40 opacity-30" />
 
       <div className="max-w-7xl mx-auto px-5 sm:px-8 grid lg:grid-cols-12 gap-12 items-center">

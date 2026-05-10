@@ -6,7 +6,7 @@ const FEATURE_ITEMS = [
   { href: "#dashboard", label: "Home Dashboard", icon: Flame, color: "text-purple-300" },
   { href: "#nutrition", label: "Nutrition", icon: Apple, color: "text-amber-300" },
   { href: "#food-scan", label: "AI Food Scan", icon: Camera, color: "text-pink-300" },
-  { href: "#coach", label: "Gym Buddie AI", icon: MessageSquare, color: "text-purple-300" },
+  { href: "#gym-buddie", label: "Gym Buddie AI", icon: MessageSquare, color: "text-purple-300" },
   { href: "#workout", label: "Workout Planner", icon: Dumbbell, color: "text-cyan-300" },
   { href: "#combat", label: "Combat Zone", icon: Swords, color: "text-pink-300" },
   { href: "#arena", label: "Arena", icon: Users, color: "text-fuchsia-300" },

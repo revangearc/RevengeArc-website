@@ -14,6 +14,7 @@ import requests
 
 BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://arc-preview-2.preview.emergentagent.com").rstrip("/")
 ADMIN_PASSWORD = "Bashar1212"
+ADMIN_EMAIL = "Revengearchelp@gmail.com"
 
 API = f"{BASE_URL}/api"
 
@@ -22,7 +23,7 @@ API = f"{BASE_URL}/api"
 
 @pytest.fixture(scope="session")
 def admin_token():
-    r = requests.post(f"{API}/admin/login", json={"password": ADMIN_PASSWORD}, timeout=15)
+    r = requests.post(f"{API}/admin/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}, timeout=15)
     assert r.status_code == 200, f"admin login failed: {r.status_code} {r.text}"
     token = r.json().get("token")
     assert token
@@ -70,13 +71,13 @@ def _seed_creator_entry(prefix="TEST5_CR"):
 
 class TestAdminLogin:
     def test_login_correct_password(self):
-        r = requests.post(f"{API}/admin/login", json={"password": ADMIN_PASSWORD}, timeout=15)
+        r = requests.post(f"{API}/admin/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}, timeout=15)
         assert r.status_code == 200
         assert isinstance(r.json().get("token"), str)
         assert len(r.json()["token"]) > 0
 
     def test_login_wrong_password(self):
-        r = requests.post(f"{API}/admin/login", json={"password": "wrong-pass"}, timeout=15)
+        r = requests.post(f"{API}/admin/login", json={"email": ADMIN_EMAIL, "password": "wrong-pass"}, timeout=15)
         assert r.status_code == 401
 
 

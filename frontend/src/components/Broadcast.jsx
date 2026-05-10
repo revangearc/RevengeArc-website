@@ -13,6 +13,7 @@ import {
   deleteSignature, searchUsers,
 } from "../lib/api";
 import { SUPPORT_EMAIL } from "../lib/mockups";
+import PortalPopover from "./PortalPopover";
 
 const GROUPS = [
   { id: "waitlist", label: "Waitlist", icon: Users, accent: "purple", desc: "Everyone on the waitlist" },
@@ -131,13 +132,17 @@ export default function Broadcast({ prefillRecipients = [], onPrefillUsed }) {
   const groupCount = group === "custom" ? customRecipients.length : counts?.[group] ?? "—";
   const canSend = subject.trim() && html.trim() && (group === "custom" ? customRecipients.length > 0 : (counts?.[group] ?? 0) > 0);
 
+  const [lastResult, setLastResult] = useState(null);
+
   const onConfirm = async () => {
     setConfirmOpen(false);
     setSending(true);
+    setLastResult(null);
     try {
       const payload = { subject, html_content: html, recipient_group: group, custom_recipients: group === "custom" ? customRecipients : [] };
       const res = await sendAnnouncement(payload);
-      if (res.data.sent > 0) toast.success(`Sent to ${res.data.sent} of ${res.data.total}`);
+      setLastResult(res.data);
+      if (res.data.sent > 0) toast.success(`Sent ${res.data.sent} of ${res.data.total}${res.data.failed ? ` · ${res.data.failed} failed` : ""}`);
       else toast.error(`No emails delivered. ${res.data.failed} failed${res.data.failed_emails?.length ? " (e.g. " + res.data.failed_emails[0] + ")" : ""}.`);
       if (res.data.sent > 0) { setSubject(""); setHtml(""); setActiveTemplateId(null); }
     } catch (err) {
@@ -440,6 +445,69 @@ export default function Broadcast({ prefillRecipients = [], onPrefillUsed }) {
           </motion.div>
         )}
       </AnimatePresence>
+
+      {/* Sending progress overlay */}
+      <AnimatePresence>
+        {sending && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 grid place-items-center px-4 bg-black/75 backdrop-blur-md" data-testid="broadcast-sending-overlay">
+            <motion.div initial={{ scale: 0.92, y: 16 }} animate={{ scale: 1, y: 0 }} className="glass rounded-3xl max-w-md w-full p-8 text-center">
+              <div className="mx-auto h-14 w-14 rounded-2xl bg-purple-500/15 border border-purple-500/40 grid place-items-center glow-purple">
+                <Send className="h-6 w-6 text-purple-300" />
+              </div>
+              <h3 className="font-display font-extrabold text-2xl mt-5">Broadcasting…</h3>
+              <p className="text-white/60 text-sm mt-1.5">
+                Firing <span className="font-bold text-white">{groupCount}</span> emails to <span className="font-bold text-white">{groupMeta?.label}</span> in parallel batches.
+              </p>
+              <div className="mt-5 h-2 rounded-full bg-white/5 overflow-hidden relative">
+                <motion.div
+                  initial={{ x: "-100%" }}
+                  animate={{ x: "100%" }}
+                  transition={{ duration: 1.4, repeat: Infinity, ease: "easeInOut" }}
+                  className="absolute inset-y-0 w-1/2 bg-gradient-to-r from-transparent via-purple-500 to-transparent"
+                />
+              </div>
+              <div className="mt-4 text-[11px] text-white/40 tracking-wider">DO NOT CLOSE THIS TAB</div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Last broadcast result summary */}
+      <AnimatePresence>
+        {lastResult && !sending && (
+          <motion.div
+            initial={{ opacity: 0, y: 12, scale: 0.95 }}
+            animate={{ opacity: 1, y: 0, scale: 1 }}
+            exit={{ opacity: 0 }}
+            className="fixed bottom-6 right-6 z-40 max-w-sm glass rounded-2xl p-5 border border-purple-500/30 shadow-2xl"
+            data-testid="broadcast-result-summary"
+          >
+            <button onClick={() => setLastResult(null)} className="absolute top-3 right-3 h-7 w-7 rounded-full border border-white/10 grid place-items-center text-white/50 hover:text-white">
+              <X className="h-3.5 w-3.5" />
+            </button>
+            <div className="text-[10px] tracking-[0.3em] text-white/55 font-bold">LAST BROADCAST</div>
+            <div className="mt-2 grid grid-cols-3 gap-2">
+              <div className="rounded-xl border border-emerald-500/30 bg-emerald-500/5 p-3 text-center">
+                <div className="text-[9px] tracking-widest text-emerald-300/80 font-bold">SENT</div>
+                <div className="font-display font-extrabold text-2xl text-emerald-300">{lastResult.sent}</div>
+              </div>
+              <div className="rounded-xl border border-red-500/30 bg-red-500/5 p-3 text-center">
+                <div className="text-[9px] tracking-widest text-red-300/80 font-bold">FAILED</div>
+                <div className="font-display font-extrabold text-2xl text-red-300">{lastResult.failed}</div>
+              </div>
+              <div className="rounded-xl border border-white/10 bg-white/4 p-3 text-center">
+                <div className="text-[9px] tracking-widest text-white/55 font-bold">TOTAL</div>
+                <div className="font-display font-extrabold text-2xl text-white">{lastResult.total}</div>
+              </div>
+            </div>
+            {lastResult.failed_emails?.length > 0 && (
+              <div className="mt-3 text-[10px] text-white/45">
+                Failed examples: <span className="text-red-300">{lastResult.failed_emails.slice(0, 2).join(", ")}</span>
+              </div>
+            )}
+          </motion.div>
+        )}
+      </AnimatePresence>
     </motion.div>
   );
 }
@@ -452,39 +520,51 @@ const DEFAULT_SIG_TEMPLATE = `<div style="margin-top:28px;padding-top:18px;borde
 function CustomRecipientPicker({ recipients, onAdd, onRemove }) {
   const [query, setQuery] = useState("");
   const [results, setResults] = useState([]);
-  const [open, setOpen] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [focused, setFocused] = useState(false);
   const [highlight, setHighlight] = useState(0);
+  const inputWrapRef = useRef(null);
+  const inputRef = useRef(null);
+  const debounceRef = useRef(null);
 
+  // Debounced search on query change
   useEffect(() => {
+    if (debounceRef.current) clearTimeout(debounceRef.current);
     const q = query.trim();
     if (q.length < 2) {
       setResults([]);
-      setOpen(false);
+      setLoading(false);
       return;
     }
     setLoading(true);
-    const t = setTimeout(async () => {
+    debounceRef.current = setTimeout(async () => {
       try {
         const res = await searchUsers(q);
         setResults(res.data.results || []);
-        setOpen(true);
         setHighlight(0);
-      } catch { /* noop */ }
-      finally { setLoading(false); }
+      } catch {
+        setResults([]);
+      } finally {
+        setLoading(false);
+      }
     }, 220);
-    return () => clearTimeout(t);
+    return () => debounceRef.current && clearTimeout(debounceRef.current);
   }, [query]);
+
+  // Open dropdown whenever the user is focused AND has typed 2+ chars (always show — empty results show a helpful hint)
+  const open = focused && query.trim().length >= 2;
 
   const commit = (item) => {
     if (item?.email) {
       onAdd(item.email);
     } else if (query.includes("@")) {
-      onAdd(query);
+      onAdd(query.trim());
     }
     setQuery("");
     setResults([]);
-    setOpen(false);
+    setHighlight(0);
+    // Re-focus so user can immediately add another
+    requestAnimationFrame(() => inputRef.current?.focus());
   };
 
   const onKey = (e) => {
@@ -500,14 +580,13 @@ function CustomRecipientPicker({ recipients, onAdd, onRemove }) {
     if (e.key === "ArrowDown") { e.preventDefault(); setHighlight((h) => Math.min(h + 1, results.length - 1)); }
     else if (e.key === "ArrowUp") { e.preventDefault(); setHighlight((h) => Math.max(h - 1, 0)); }
     else if (e.key === "Enter") { e.preventDefault(); commit(results[highlight]); }
-    else if (e.key === "Escape") { setOpen(false); }
+    else if (e.key === "Escape") { setFocused(false); inputRef.current?.blur(); }
   };
 
   return (
     <div className="mt-4">
       <div className="text-[10px] tracking-[0.3em] text-white/55 font-bold mb-2">SEARCH & ADD WARRIORS</div>
 
-      {/* Selected chips */}
       {recipients.length > 0 && (
         <div className="flex flex-wrap gap-1.5 mb-2">
           {recipients.map(e => (
@@ -522,68 +601,84 @@ function CustomRecipientPicker({ recipients, onAdd, onRemove }) {
         </div>
       )}
 
-      {/* Search input */}
-      <div className="relative">
-        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 z-10" />
+      <div ref={inputWrapRef} className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 z-10 pointer-events-none" />
         <input
+          ref={inputRef}
           value={query}
           onChange={(e) => setQuery(e.target.value)}
           onKeyDown={onKey}
-          onFocus={() => results.length && setOpen(true)}
+          onFocus={() => setFocused(true)}
           placeholder="Search by name, email, IG or TikTok handle..."
           className="ra-input !pl-10"
+          autoComplete="off"
           data-testid="custom-recipient-input"
         />
-        {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-purple-300" />}
-
-        <AnimatePresence>
-          {open && results.length > 0 && (
-            <motion.div
-              initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
-              transition={{ duration: 0.15 }}
-              className="absolute z-30 left-0 right-0 mt-1.5 rounded-xl border border-white/12 bg-[#0a0814]/97 backdrop-blur-md shadow-2xl overflow-hidden max-h-72 overflow-y-auto"
-              data-testid="recipient-search-results"
-            >
-              {results.map((r, i) => {
-                const isSelected = recipients.includes(r.email);
-                return (
-                  <button
-                    key={r.email}
-                    onMouseEnter={() => setHighlight(i)}
-                    onClick={() => commit(r)}
-                    disabled={isSelected}
-                    className={`w-full text-left px-3.5 py-2.5 border-b border-white/5 last:border-b-0 transition flex items-center gap-3 ${highlight === i ? "bg-purple-500/20" : ""} ${isSelected ? "opacity-40 cursor-not-allowed" : "hover:bg-purple-500/15"}`}
-                    data-testid={`search-result-${r.email}`}
-                  >
-                    <div className={`h-8 w-8 rounded-full grid place-items-center flex-shrink-0 ${r.source === "creator" ? "bg-amber-500/15 border border-amber-500/40" : "bg-purple-500/15 border border-purple-500/40"}`}>
-                      {r.source === "creator" ? <Trophy className="h-3.5 w-3.5 text-amber-300" /> : <Users className="h-3.5 w-3.5 text-purple-300" />}
-                    </div>
-                    <div className="flex-1 min-w-0">
-                      <div className="flex items-center gap-2 flex-wrap">
-                        <span className="font-bold text-white text-sm truncate">{r.full_name || "—"}</span>
-                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase ${r.source === "creator" ? "bg-amber-500/15 text-amber-200" : "bg-purple-500/15 text-purple-200"}`}>
-                          {r.source}
-                        </span>
-                        {r.status && <span className="text-[9px] text-white/40 uppercase">{r.status}</span>}
-                      </div>
-                      <div className="text-xs text-white/55 truncate">{r.email}</div>
-                      {(r.instagram || r.tiktok) && (
-                        <div className="text-[10px] text-white/40 truncate">
-                          {r.instagram && <span className="text-pink-300/80">IG: {r.instagram}</span>}
-                          {r.instagram && r.tiktok && <span className="mx-1">·</span>}
-                          {r.tiktok && <span className="text-cyan-300/80">TT: {r.tiktok}</span>}
-                        </div>
-                      )}
-                    </div>
-                    {isSelected && <Check className="h-4 w-4 text-emerald-400 flex-shrink-0" />}
-                  </button>
-                );
-              })}
-            </motion.div>
-          )}
-        </AnimatePresence>
+        {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-purple-300 pointer-events-none" />}
       </div>
       <div className="text-[11px] text-white/40 mt-1.5">Type 2+ chars to search waitlist & creators. Press Enter to add custom email. Backspace removes the last chip.</div>
+
+      <PortalPopover
+        triggerRef={inputWrapRef}
+        open={open}
+        onClose={() => setFocused(false)}
+        align="start"
+        side="bottom"
+        offset={6}
+        matchWidth
+      >
+        <motion.div
+          initial={{ opacity: 0, y: -4 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ duration: 0.15 }}
+          className="rounded-xl border border-purple-500/30 bg-[#0a0814]/97 backdrop-blur-xl shadow-2xl overflow-hidden max-h-72 overflow-y-auto"
+          data-testid="recipient-search-results"
+        >
+          {loading && results.length === 0 ? (
+            <div className="px-4 py-3 text-xs text-white/50 flex items-center gap-2">
+              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Searching warriors…
+            </div>
+          ) : results.length === 0 ? (
+            <div className="px-4 py-3 text-xs text-white/50">No matches. Press Enter to add as custom email.</div>
+          ) : (
+            results.map((r, i) => {
+              const isSelected = recipients.includes(r.email);
+              return (
+                <button
+                  key={r.email}
+                  onMouseEnter={() => setHighlight(i)}
+                  onMouseDown={(e) => { e.preventDefault(); commit(r); }}
+                  disabled={isSelected}
+                  className={`w-full text-left px-3.5 py-2.5 border-b border-white/5 last:border-b-0 transition flex items-center gap-3 ${highlight === i ? "bg-purple-500/20" : ""} ${isSelected ? "opacity-40 cursor-not-allowed" : "hover:bg-purple-500/15"}`}
+                  data-testid={`search-result-${r.email}`}
+                >
+                  <div className={`h-8 w-8 rounded-full grid place-items-center flex-shrink-0 ${r.source === "creator" ? "bg-amber-500/15 border border-amber-500/40" : "bg-purple-500/15 border border-purple-500/40"}`}>
+                    {r.source === "creator" ? <Trophy className="h-3.5 w-3.5 text-amber-300" /> : <Users className="h-3.5 w-3.5 text-purple-300" />}
+                  </div>
+                  <div className="flex-1 min-w-0">
+                    <div className="flex items-center gap-2 flex-wrap">
+                      <span className="font-bold text-white text-sm truncate">{r.full_name || "—"}</span>
+                      <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase ${r.source === "creator" ? "bg-amber-500/15 text-amber-200" : "bg-purple-500/15 text-purple-200"}`}>
+                        {r.source}
+                      </span>
+                      {r.status && <span className="text-[9px] text-white/40 uppercase">{r.status}</span>}
+                    </div>
+                    <div className="text-xs text-white/55 truncate">{r.email}</div>
+                    {(r.instagram || r.tiktok) && (
+                      <div className="text-[10px] text-white/40 truncate">
+                        {r.instagram && <span className="text-pink-300/80">IG: {r.instagram}</span>}
+                        {r.instagram && r.tiktok && <span className="mx-1">·</span>}
+                        {r.tiktok && <span className="text-cyan-300/80">TT: {r.tiktok}</span>}
+                      </div>
+                    )}
+                  </div>
+                  {isSelected && <Check className="h-4 w-4 text-emerald-400 flex-shrink-0" />}
+                </button>
+              );
+            })
+          )}
+        </motion.div>
+      </PortalPopover>
     </div>
   );
 }

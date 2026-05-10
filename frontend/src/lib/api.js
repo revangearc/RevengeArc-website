@@ -19,7 +19,7 @@ apiClient.interceptors.request.use((config) => {
 
 export const joinWaitlist = (data) => apiClient.post("/waitlist", data);
 export const applyCreator = (data) => apiClient.post("/creator-applications", data);
-export const adminLogin = (password) => apiClient.post("/admin/login", { password });
+export const adminLogin = (email, password) => apiClient.post("/admin/login", { email, password });
 export const fetchStats = (range = "14d") => apiClient.get(`/admin/stats?range=${range}`);
 export const fetchWaitlist = () => apiClient.get("/admin/waitlist");
 export const fetchCreators = (status) => apiClient.get(`/admin/creators${status ? `?status=${status}` : ""}`);
@@ -43,3 +43,10 @@ export const bulkDeleteCreators = (ids, confirmation) => apiClient.post("/admin/
 export const deleteAllCreators = (confirmation) => apiClient.delete("/admin/creators", { data: { confirmation } });
 export const setCreatorStatus = (id, status) => apiClient.post(`/admin/creators/${id}/status`, { status });
 export const searchUsers = (q) => apiClient.get(`/admin/users/search?q=${encodeURIComponent(q)}`);
+export const fetchEmailLogs = (params = {}) => {
+  const q = new URLSearchParams();
+  Object.entries(params).forEach(([k, v]) => { if (v !== undefined && v !== null && v !== "") q.append(k, v); });
+  const qs = q.toString();
+  return apiClient.get(`/admin/email-logs${qs ? `?${qs}` : ""}`);
+};
+export const clearEmailLogs = (confirmation) => apiClient.delete("/admin/email-logs", { data: { confirmation } });
