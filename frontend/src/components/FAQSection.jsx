@@ -21,7 +21,7 @@ export default function FAQSection() {
     <section id="faq" className="relative py-28 sm:py-36 overflow-hidden" data-testid="section-faq">
       <div className="orb orb-purple w-[400px] h-[400px] -top-20 -right-20 opacity-25" />
       <div className="max-w-4xl mx-auto px-5 sm:px-8">
-        <SectionHeader kicker="FAQ" title={<>Questions, <span className="gradient-text">answered.</span></>} subtitle="Everything you wanted to know before joining the arc." align="center" />
+        <SectionHeader kicker="FAQ" title={<>Questions, <span className="gradient-text">answered.</span></>} subtitle="Everything you wanted to know before joining the arc." align="center" variant="rise" />
 
         <div className="mt-12 space-y-3">
           {items.map((it, i) => {

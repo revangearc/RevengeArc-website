@@ -13,6 +13,7 @@ export default function ProfileSection() {
         <div className="lg:col-span-6">
           <SectionHeader
             kicker="PROFILE SYSTEM"
+            variant="slide-left"
             title={<>Earn your <span className="gradient-amber">rank.</span> Wear it.</>}
             subtitle="XP, ranks, day streaks, weekly score, body stats — every metric that matters lives on a profile that feels like a fighter card."
           />

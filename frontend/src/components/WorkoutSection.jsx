@@ -38,6 +38,7 @@ export default function WorkoutSection() {
         <div className="lg:col-span-6">
           <SectionHeader
             kicker="WORKOUT PLANNER"
+            variant="slide-right"
             title={<>Beast Mode <span className="gradient-cyan">Unleashed.</span></>}
             subtitle="Your weekly split, alive. Hit your sessions, miss them, or rest — every day is logged with cinematic precision."
           />

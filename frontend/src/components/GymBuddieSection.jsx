@@ -40,6 +40,7 @@ export default function GymBuddieSection() {
         <div className="lg:col-span-7">
           <SectionHeader
             kicker="GYM BUDDIE AI"
+            variant="float"
             title={<>Your <span className="gradient-text">personal coach,</span> living in your pocket.</>}
             subtitle="Ask anything — workouts, nutrition, recovery, mindset. Cinematic AI coaching that knows your body, your goal, your arc."
           />

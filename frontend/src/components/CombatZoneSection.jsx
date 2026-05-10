@@ -19,6 +19,7 @@ export default function CombatZoneSection() {
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         <SectionHeader
           kicker="COMBAT ZONE"
+          variant="swoop"
           title={<>Live battle. <span className="gradient-cyan">Real reps.</span></>}
           subtitle="Track every set, every rep, every pound — with AI advice and PR detection that hits harder than your last lift."
           align="center"

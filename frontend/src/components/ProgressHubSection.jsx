@@ -35,6 +35,7 @@ export default function ProgressHubSection() {
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         <SectionHeader
           kicker="PROGRESS HUB"
+          variant="rise"
           title={<>Every detail matters <br/>on your <span className="gradient-text">journey.</span></>}
           subtitle="Form Lab, photo progress, weight tracking, AI analysis, weekly reports — your entire transformation in one cinematic dashboard."
           align="center"

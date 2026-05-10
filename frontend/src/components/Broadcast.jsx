@@ -4,11 +4,13 @@ import {
   Send, Loader2, Users, Trophy, UserCheck, Globe2, Bold, Italic, Heading1,
   Heading2, List, Link2, Image as ImageIcon, MousePointerClick, X, Eye, Code2,
   ChevronRight, AlertTriangle, Smartphone, BookmarkPlus, FileText, Trash2, Check,
+  Search, Plus, PenLine, Mail,
 } from "lucide-react";
 import { toast } from "sonner";
 import {
   sendAnnouncement, fetchRecipientCounts, fetchTemplates, createTemplate,
-  updateTemplate, deleteTemplate,
+  updateTemplate, deleteTemplate, fetchSignatures, createSignature, updateSignature,
+  deleteSignature, searchUsers,
 } from "../lib/api";
 import { SUPPORT_EMAIL } from "../lib/mockups";
 
@@ -19,7 +21,7 @@ const GROUPS = [
   { id: "iphone_users", label: "iPhone Users", icon: Smartphone, accent: "purple", desc: "Waitlist on iPhone" },
   { id: "android_users", label: "Android Users", icon: Smartphone, accent: "cyan", desc: "Waitlist on Android" },
   { id: "everyone", label: "Everyone", icon: Globe2, accent: "cyan", desc: "Waitlist + creators (deduped)" },
-  { id: "custom", label: "Custom Recipients", icon: FileText, accent: "pink", desc: "Pick exact emails" },
+  { id: "custom", label: "Custom Recipients", icon: FileText, accent: "pink", desc: "Search & pick exact users" },
 ];
 
 const accentMap = {
@@ -45,19 +47,24 @@ export default function Broadcast({ prefillRecipients = [], onPrefillUsed }) {
   const [sending, setSending] = useState(false);
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [customRecipients, setCustomRecipients] = useState(prefillRecipients);
-  const [recipientInput, setRecipientInput] = useState("");
   const [templates, setTemplates] = useState([]);
   const [activeTemplateId, setActiveTemplateId] = useState(null);
   const [showSaveTemplate, setShowSaveTemplate] = useState(false);
   const [templateName, setTemplateName] = useState("");
+
+  // Signatures
+  const [signatures, setSignatures] = useState([]);
+  const [showSigModal, setShowSigModal] = useState(false);
+  const [editingSig, setEditingSig] = useState(null); // {id?, name, html_content}
+
   const textareaRef = useRef(null);
 
   useEffect(() => {
     fetchRecipientCounts().then(r => setCounts(r.data)).catch(() => {});
     fetchTemplates().then(r => setTemplates(r.data)).catch(() => {});
+    fetchSignatures().then(r => setSignatures(r.data)).catch(() => {});
   }, []);
 
-  // Apply prefill on mount
   useEffect(() => {
     if (prefillRecipients.length) {
       setGroup("custom");
@@ -104,28 +111,18 @@ export default function Broadcast({ prefillRecipients = [], onPrefillUsed }) {
     { icon: Code2, title: "Logo Header", action: () => insertAtCursor(`<div style="text-align:center;margin:8px 0 20px;"><div style="display:inline-block;padding:6px 14px;background:rgba(168,85,247,0.12);border:1px solid rgba(168,85,247,0.4);border-radius:999px;color:#c4b5fd;font-size:11px;font-weight:700;letter-spacing:4px;">REVENGE ARC</div></div>`) },
   ];
 
-  const insertSignature = () => {
-    insertAtCursor(`\n<div style="margin-top:28px;padding-top:18px;border-top:1px solid rgba(168,85,247,0.18);color:#a8a8c2;font-size:14px;">— The Revenge Arc Team<br><span style="color:#7a7a96;font-size:12px;">Discipline built different.</span></div>\n`);
+  const insertSignature = (html_content) => {
+    insertAtCursor(`\n${html_content}\n`);
   };
 
   const insertSeparator = () => insertAtCursor(`<hr style="border:none;border-top:1px solid rgba(168,85,247,0.25);margin:20px 0;" />`);
 
-  const addRecipient = (raw) => {
-    const v = (raw || "").trim().toLowerCase();
+  const addRecipient = (email) => {
+    const v = (email || "").trim().toLowerCase();
     if (!v) return;
     if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(v)) { toast.error("Invalid email"); return; }
     if (customRecipients.includes(v)) return;
     setCustomRecipients([...customRecipients, v]);
-  };
-
-  const onRecipientKey = (e) => {
-    if (e.key === "Enter" || e.key === "," || e.key === " ") {
-      e.preventDefault();
-      addRecipient(recipientInput);
-      setRecipientInput("");
-    } else if (e.key === "Backspace" && !recipientInput && customRecipients.length) {
-      setCustomRecipients(customRecipients.slice(0, -1));
-    }
   };
 
   const removeRecipient = (email) => setCustomRecipients(customRecipients.filter(e => e !== email));
@@ -186,6 +183,37 @@ export default function Broadcast({ prefillRecipients = [], onPrefillUsed }) {
     } catch { toast.error("Delete failed"); }
   };
 
+  const saveSig = async () => {
+    if (!editingSig?.name?.trim() || !editingSig?.html_content?.trim()) {
+      toast.error("Name & HTML required");
+      return;
+    }
+    try {
+      if (editingSig.id) {
+        const res = await updateSignature(editingSig.id, { name: editingSig.name, html_content: editingSig.html_content });
+        setSignatures(signatures.map(s => s.id === res.data.id ? res.data : s));
+        toast.success("Signature updated");
+      } else {
+        const res = await createSignature({ name: editingSig.name, html_content: editingSig.html_content });
+        setSignatures([res.data, ...signatures]);
+        toast.success("Signature saved");
+      }
+      setShowSigModal(false);
+      setEditingSig(null);
+    } catch (err) {
+      toast.error(err?.response?.data?.detail || "Signature save failed");
+    }
+  };
+
+  const removeSig = async (s) => {
+    if (!window.confirm(`Delete signature "${s.name}"?`)) return;
+    try {
+      await deleteSignature(s.id);
+      setSignatures(signatures.filter(x => x.id !== s.id));
+      toast.success("Signature deleted");
+    } catch { toast.error("Delete failed"); }
+  };
+
   return (
     <motion.div initial={{ opacity: 0, y: 14 }} animate={{ opacity: 1, y: 0 }} className="grid lg:grid-cols-2 gap-5 lg:gap-6">
       <div className="space-y-5">
@@ -213,29 +241,11 @@ export default function Broadcast({ prefillRecipients = [], onPrefillUsed }) {
           </div>
 
           {group === "custom" && (
-            <div className="mt-4">
-              <div className="text-[10px] tracking-[0.3em] text-white/55 font-bold mb-2">CUSTOM EMAILS</div>
-              <div className="ra-input !h-auto !min-h-11 !py-2 flex items-center gap-1.5 flex-wrap">
-                {customRecipients.map(e => (
-                  <span key={e} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-purple-100 border border-purple-300 text-purple-900 text-xs font-bold">
-                    {e}
-                    <button onClick={() => removeRecipient(e)} className="text-purple-600 hover:text-purple-900">
-                      <X className="h-3 w-3" />
-                    </button>
-                  </span>
-                ))}
-                <input
-                  value={recipientInput}
-                  onChange={(e) => setRecipientInput(e.target.value)}
-                  onKeyDown={onRecipientKey}
-                  onBlur={() => { if (recipientInput.trim()) { addRecipient(recipientInput); setRecipientInput(""); } }}
-                  placeholder={customRecipients.length ? "Add another..." : "warrior@email.com, then Enter"}
-                  className="flex-1 min-w-[140px] outline-none border-none bg-transparent text-zinc-900 placeholder:text-zinc-500 text-sm"
-                  data-testid="custom-recipient-input"
-                />
-              </div>
-              <div className="text-[11px] text-white/40 mt-1.5">Press Enter, comma, or space to add. Backspace to remove last.</div>
-            </div>
+            <CustomRecipientPicker
+              recipients={customRecipients}
+              onAdd={addRecipient}
+              onRemove={removeRecipient}
+            />
           )}
         </div>
 
@@ -266,6 +276,43 @@ export default function Broadcast({ prefillRecipients = [], onPrefillUsed }) {
           )}
         </div>
 
+        {/* Signatures */}
+        <div className="glass rounded-2xl p-5">
+          <div className="flex items-center justify-between mb-3">
+            <div className="text-[10px] tracking-[0.3em] text-white/55 font-bold flex items-center gap-1.5">
+              <PenLine className="h-3.5 w-3.5" /> SIGNATURES
+            </div>
+            <button
+              onClick={() => { setEditingSig({ name: "", html_content: DEFAULT_SIG_TEMPLATE }); setShowSigModal(true); }}
+              className="text-[11px] text-purple-300 hover:text-purple-200 font-bold tracking-wider flex items-center gap-1"
+              data-testid="new-signature-btn"
+            >
+              <Plus className="h-3.5 w-3.5" /> NEW
+            </button>
+          </div>
+          {signatures.length === 0 ? (
+            <div className="text-xs text-white/40 italic">No signatures saved.</div>
+          ) : (
+            <div className="space-y-1.5 max-h-40 overflow-y-auto">
+              {signatures.map(s => (
+                <div key={s.id} className="flex items-center gap-2 rounded-lg border border-white/8 bg-white/3 p-2.5 hover:border-purple-500/40" data-testid={`signature-${s.id}`}>
+                  <button onClick={() => insertSignature(s.html_content)} className="flex-1 text-left min-w-0 flex items-center gap-2" data-testid={`signature-insert-${s.id}`}>
+                    <PenLine className="h-3.5 w-3.5 text-purple-300 flex-shrink-0" />
+                    <span className="font-bold text-sm text-white truncate">{s.name}</span>
+                  </button>
+                  <button onClick={() => { setEditingSig({ id: s.id, name: s.name, html_content: s.html_content }); setShowSigModal(true); }} className="h-7 w-7 rounded-md bg-white/4 border border-white/10 grid place-items-center text-white/70 hover:text-white flex-shrink-0" data-testid={`signature-edit-${s.id}`}>
+                    <PenLine className="h-3 w-3" />
+                  </button>
+                  <button onClick={() => removeSig(s)} className="h-7 w-7 rounded-md bg-red-500/10 border border-red-500/30 grid place-items-center text-red-400 hover:bg-red-500/20 flex-shrink-0">
+                    <Trash2 className="h-3 w-3" />
+                  </button>
+                </div>
+              ))}
+            </div>
+          )}
+          <div className="text-[11px] text-white/40 mt-2">Click a signature to insert at cursor.</div>
+        </div>
+
         {/* Subject + Body */}
         <div className="glass rounded-2xl p-5 space-y-4">
           <div>
@@ -278,7 +325,6 @@ export default function Broadcast({ prefillRecipients = [], onPrefillUsed }) {
               <label className="text-[10px] tracking-[0.3em] text-white/55 font-bold">MESSAGE</label>
               <div className="flex items-center gap-2">
                 <button onClick={insertSeparator} className="text-[11px] text-white/55 hover:text-white font-bold tracking-wider">+ DIVIDER</button>
-                <button onClick={insertSignature} className="text-[11px] text-purple-300 hover:text-purple-200 font-bold tracking-wider">+ SIGNATURE</button>
               </div>
             </div>
             <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-t-xl border border-purple-500/30 bg-[#0c0a18] border-b-0">
@@ -334,6 +380,45 @@ export default function Broadcast({ prefillRecipients = [], onPrefillUsed }) {
         )}
       </AnimatePresence>
 
+      {/* Signature edit modal */}
+      <AnimatePresence>
+        {showSigModal && editingSig && (
+          <motion.div initial={{ opacity: 0 }} animate={{ opacity: 1 }} exit={{ opacity: 0 }} className="fixed inset-0 z-50 grid place-items-center px-4 py-6 bg-black/70 backdrop-blur-md overflow-y-auto" onClick={() => setShowSigModal(false)}>
+            <motion.div initial={{ scale: 0.92 }} animate={{ scale: 1 }} onClick={(e) => e.stopPropagation()} className="glass rounded-3xl max-w-2xl w-full p-7 my-6" data-testid="signature-modal">
+              <h3 className="font-display font-extrabold text-2xl">{editingSig.id ? "Edit signature" : "New signature"}</h3>
+              <p className="text-white/55 text-sm mt-1">Manage reusable sign-offs separate from full templates.</p>
+              <label className="text-[10px] tracking-[0.3em] text-white/55 font-bold mt-5 block">NAME</label>
+              <input
+                value={editingSig.name}
+                onChange={(e) => setEditingSig({ ...editingSig, name: e.target.value })}
+                placeholder="e.g. Revenge Arc Original"
+                className="ra-input mt-2"
+                data-testid="signature-name-input"
+              />
+              <label className="text-[10px] tracking-[0.3em] text-white/55 font-bold mt-5 block">HTML CONTENT</label>
+              <textarea
+                value={editingSig.html_content}
+                onChange={(e) => setEditingSig({ ...editingSig, html_content: e.target.value })}
+                rows={8}
+                className="ra-textarea mt-2 font-mono !text-[13px]"
+                placeholder="<div>— The Revenge Arc Team</div>"
+                data-testid="signature-html-input"
+              />
+              <div className="mt-3 rounded-xl border border-white/10 bg-[#05050a] p-4">
+                <div className="text-[10px] tracking-[0.3em] text-white/45 font-bold mb-2">PREVIEW</div>
+                <div className="text-white text-sm" dangerouslySetInnerHTML={{ __html: editingSig.html_content }} />
+              </div>
+              <div className="mt-5 flex items-center gap-2.5">
+                <button onClick={() => setShowSigModal(false)} className="btn-ghost flex-1 justify-center">Cancel</button>
+                <button onClick={saveSig} className="btn-primary flex-1 justify-center" data-testid="signature-save-btn">
+                  <Check className="h-4 w-4" /> {editingSig.id ? "Update" : "Save"}
+                </button>
+              </div>
+            </motion.div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Confirmation modal */}
       <AnimatePresence>
         {confirmOpen && (
@@ -356,6 +441,150 @@ export default function Broadcast({ prefillRecipients = [], onPrefillUsed }) {
         )}
       </AnimatePresence>
     </motion.div>
+  );
+}
+
+const DEFAULT_SIG_TEMPLATE = `<div style="margin-top:28px;padding-top:18px;border-top:1px solid rgba(168,85,247,0.18);color:#a8a8c2;font-size:14px;line-height:1.6;">
+  — The Revenge Arc Team<br>
+  <span style="color:#7a7a96;font-size:12px;letter-spacing:2px;">DISCIPLINE BUILT DIFFERENT.</span>
+</div>`;
+
+function CustomRecipientPicker({ recipients, onAdd, onRemove }) {
+  const [query, setQuery] = useState("");
+  const [results, setResults] = useState([]);
+  const [open, setOpen] = useState(false);
+  const [loading, setLoading] = useState(false);
+  const [highlight, setHighlight] = useState(0);
+
+  useEffect(() => {
+    const q = query.trim();
+    if (q.length < 2) {
+      setResults([]);
+      setOpen(false);
+      return;
+    }
+    setLoading(true);
+    const t = setTimeout(async () => {
+      try {
+        const res = await searchUsers(q);
+        setResults(res.data.results || []);
+        setOpen(true);
+        setHighlight(0);
+      } catch { /* noop */ }
+      finally { setLoading(false); }
+    }, 220);
+    return () => clearTimeout(t);
+  }, [query]);
+
+  const commit = (item) => {
+    if (item?.email) {
+      onAdd(item.email);
+    } else if (query.includes("@")) {
+      onAdd(query);
+    }
+    setQuery("");
+    setResults([]);
+    setOpen(false);
+  };
+
+  const onKey = (e) => {
+    if (!open || !results.length) {
+      if (e.key === "Enter" || e.key === ",") {
+        e.preventDefault();
+        if (query.trim()) commit(null);
+      } else if (e.key === "Backspace" && !query && recipients.length) {
+        onRemove(recipients[recipients.length - 1]);
+      }
+      return;
+    }
+    if (e.key === "ArrowDown") { e.preventDefault(); setHighlight((h) => Math.min(h + 1, results.length - 1)); }
+    else if (e.key === "ArrowUp") { e.preventDefault(); setHighlight((h) => Math.max(h - 1, 0)); }
+    else if (e.key === "Enter") { e.preventDefault(); commit(results[highlight]); }
+    else if (e.key === "Escape") { setOpen(false); }
+  };
+
+  return (
+    <div className="mt-4">
+      <div className="text-[10px] tracking-[0.3em] text-white/55 font-bold mb-2">SEARCH & ADD WARRIORS</div>
+
+      {/* Selected chips */}
+      {recipients.length > 0 && (
+        <div className="flex flex-wrap gap-1.5 mb-2">
+          {recipients.map(e => (
+            <span key={e} className="inline-flex items-center gap-1 px-2 py-1 rounded-md bg-purple-500/20 border border-purple-500/40 text-purple-100 text-xs font-bold">
+              <Mail className="h-3 w-3" />
+              {e}
+              <button onClick={() => onRemove(e)} className="text-purple-200 hover:text-white">
+                <X className="h-3 w-3" />
+              </button>
+            </span>
+          ))}
+        </div>
+      )}
+
+      {/* Search input */}
+      <div className="relative">
+        <Search className="absolute left-3 top-1/2 -translate-y-1/2 h-4 w-4 text-zinc-500 z-10" />
+        <input
+          value={query}
+          onChange={(e) => setQuery(e.target.value)}
+          onKeyDown={onKey}
+          onFocus={() => results.length && setOpen(true)}
+          placeholder="Search by name, email, IG or TikTok handle..."
+          className="ra-input !pl-10"
+          data-testid="custom-recipient-input"
+        />
+        {loading && <Loader2 className="absolute right-3 top-1/2 -translate-y-1/2 h-4 w-4 animate-spin text-purple-300" />}
+
+        <AnimatePresence>
+          {open && results.length > 0 && (
+            <motion.div
+              initial={{ opacity: 0, y: -4 }} animate={{ opacity: 1, y: 0 }} exit={{ opacity: 0 }}
+              transition={{ duration: 0.15 }}
+              className="absolute z-30 left-0 right-0 mt-1.5 rounded-xl border border-white/12 bg-[#0a0814]/97 backdrop-blur-md shadow-2xl overflow-hidden max-h-72 overflow-y-auto"
+              data-testid="recipient-search-results"
+            >
+              {results.map((r, i) => {
+                const isSelected = recipients.includes(r.email);
+                return (
+                  <button
+                    key={r.email}
+                    onMouseEnter={() => setHighlight(i)}
+                    onClick={() => commit(r)}
+                    disabled={isSelected}
+                    className={`w-full text-left px-3.5 py-2.5 border-b border-white/5 last:border-b-0 transition flex items-center gap-3 ${highlight === i ? "bg-purple-500/20" : ""} ${isSelected ? "opacity-40 cursor-not-allowed" : "hover:bg-purple-500/15"}`}
+                    data-testid={`search-result-${r.email}`}
+                  >
+                    <div className={`h-8 w-8 rounded-full grid place-items-center flex-shrink-0 ${r.source === "creator" ? "bg-amber-500/15 border border-amber-500/40" : "bg-purple-500/15 border border-purple-500/40"}`}>
+                      {r.source === "creator" ? <Trophy className="h-3.5 w-3.5 text-amber-300" /> : <Users className="h-3.5 w-3.5 text-purple-300" />}
+                    </div>
+                    <div className="flex-1 min-w-0">
+                      <div className="flex items-center gap-2 flex-wrap">
+                        <span className="font-bold text-white text-sm truncate">{r.full_name || "—"}</span>
+                        <span className={`px-1.5 py-0.5 rounded text-[9px] font-bold tracking-wider uppercase ${r.source === "creator" ? "bg-amber-500/15 text-amber-200" : "bg-purple-500/15 text-purple-200"}`}>
+                          {r.source}
+                        </span>
+                        {r.status && <span className="text-[9px] text-white/40 uppercase">{r.status}</span>}
+                      </div>
+                      <div className="text-xs text-white/55 truncate">{r.email}</div>
+                      {(r.instagram || r.tiktok) && (
+                        <div className="text-[10px] text-white/40 truncate">
+                          {r.instagram && <span className="text-pink-300/80">IG: {r.instagram}</span>}
+                          {r.instagram && r.tiktok && <span className="mx-1">·</span>}
+                          {r.tiktok && <span className="text-cyan-300/80">TT: {r.tiktok}</span>}
+                        </div>
+                      )}
+                    </div>
+                    {isSelected && <Check className="h-4 w-4 text-emerald-400 flex-shrink-0" />}
+                  </button>
+                );
+              })}
+            </motion.div>
+          )}
+        </AnimatePresence>
+      </div>
+      <div className="text-[11px] text-white/40 mt-1.5">Type 2+ chars to search waitlist & creators. Press Enter to add custom email. Backspace removes the last chip.</div>
+    </div>
   );
 }
 

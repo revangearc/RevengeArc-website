@@ -19,6 +19,7 @@ export default function NutritionSection() {
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         <SectionHeader
           kicker="NUTRITION"
+          variant="swoop"
           title={<>Track every <span className="gradient-amber">macro</span>. Crush every goal.</>}
           subtitle="Calories, protein, carbs, fat, hydration — all weaponized into a system that adapts to your goal in real time."
           align="center"

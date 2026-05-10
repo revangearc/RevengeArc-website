@@ -40,6 +40,7 @@ export default function PricingSection() {
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         <SectionHeader
           kicker="PRICING"
+          variant="zoom"
           title={<>Choose your <span className="gradient-text">arc.</span></>}
           subtitle="Free to start. Upgrade when you're ready to weaponize the full system."
           align="center"

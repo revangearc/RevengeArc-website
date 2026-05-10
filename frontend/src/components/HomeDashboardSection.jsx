@@ -21,6 +21,7 @@ export default function HomeDashboardSection() {
         <div className="lg:col-span-6 order-2 lg:order-1">
           <SectionHeader
             kicker="HOME DASHBOARD"
+            variant="slide-left"
             title={<>Rise again. <span className="gradient-text">Every day.</span></>}
             subtitle="A cinematic command center built around streaks, vows, and the quiet violence of daily discipline."
           />

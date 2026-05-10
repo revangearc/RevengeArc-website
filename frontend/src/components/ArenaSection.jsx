@@ -62,6 +62,7 @@ export default function ArenaSection() {
         <div className="lg:col-span-7">
           <SectionHeader
             kicker="THE ARENA"
+            variant="slide-left"
             title={<>Built for warriors. <br/>One <span className="gradient-text">movement.</span></>}
             subtitle="Post your wins, ask your questions, flex your gains. The Arena is competitive, real, and very much alive."
           />

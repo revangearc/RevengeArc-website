@@ -28,6 +28,7 @@ export default function AIFoodScanSection() {
       <div className="max-w-7xl mx-auto px-5 sm:px-8">
         <SectionHeader
           kicker="AI FOOD SCAN"
+          variant="zoom"
           title={<>Snap your meal. <br /><span className="gradient-text">Let AI handle the rest.</span></>}
           subtitle="Real-time AI vision breaks down calories, macros, portions, and ingredients — all from a single photo."
           align="center"
