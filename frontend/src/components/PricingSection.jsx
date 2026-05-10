@@ -123,72 +123,74 @@ export default function PricingSection() {
             whileInView={{ opacity: 1, y: 0 }}
             viewport={{ once: true }}
             transition={{ duration: 0.7, delay: 0.1 }}
-            className="relative rounded-3xl p-[1.5px] bg-gradient-to-br from-purple-500 via-fuchsia-500 to-cyan-400 overflow-hidden"
+            className="relative pt-4"
             data-testid="pricing-premium"
           >
-            {/* Glow */}
-            <div className="absolute -top-20 -right-20 h-60 w-60 bg-purple-500/40 blur-3xl rounded-full pointer-events-none" />
-            <div className="absolute -bottom-20 -left-20 h-60 w-60 bg-cyan-500/30 blur-3xl rounded-full pointer-events-none" />
+            {/* Recommended badge — sits above card, never clipped */}
+            <div className="absolute -top-1 left-1/2 -translate-x-1/2 sm:left-auto sm:right-6 sm:translate-x-0 z-20 px-3.5 py-1.5 rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-600 text-white text-[10px] font-bold tracking-[0.3em] glow-purple flex items-center gap-1.5 whitespace-nowrap">
+              <Sparkles className="h-3 w-3" /> RECOMMENDED
+            </div>
 
-            <div className="relative rounded-3xl bg-gradient-to-br from-[#0d0a1a] via-[#0c0816] to-[#0a0814] p-6 sm:p-8 h-full">
-              {/* Recommended badge */}
-              <div className="absolute -top-3 right-6 px-3 py-1 rounded-full bg-gradient-to-r from-purple-500 to-fuchsia-600 text-white text-[10px] font-bold tracking-[0.3em] glow-purple flex items-center gap-1.5">
-                <Sparkles className="h-3 w-3" /> RECOMMENDED
-              </div>
+            <div className="relative rounded-3xl p-[1.5px] bg-gradient-to-br from-purple-500 via-fuchsia-500 to-cyan-400 overflow-hidden">
+              {/* Glow */}
+              <div className="absolute -top-20 -right-20 h-60 w-60 bg-purple-500/40 blur-3xl rounded-full pointer-events-none" />
+              <div className="absolute -bottom-20 -left-20 h-60 w-60 bg-cyan-500/30 blur-3xl rounded-full pointer-events-none" />
 
-              <div className="text-[11px] tracking-[0.3em] text-purple-300 font-bold flex items-center gap-2">
-                <Trophy className="h-3.5 w-3.5" /> PREMIUM ARC
-              </div>
-              <h3 className="font-display font-extrabold text-3xl mt-3 gradient-text">Warrior</h3>
-              <p className="text-white/60 text-sm mt-1">The full Revenge Arc system. Built for transformation.</p>
+              <div className="relative rounded-3xl bg-gradient-to-br from-[#0d0a1a] via-[#0c0816] to-[#0a0814] p-6 sm:p-8 h-full">
+                <div className="text-[11px] tracking-[0.3em] text-purple-300 font-bold flex items-center gap-2">
+                  <Trophy className="h-3.5 w-3.5" /> PREMIUM ARC
+                </div>
+                <h3 className="font-display font-extrabold text-3xl mt-3 gradient-text">Warrior</h3>
+                <p className="text-white/60 text-sm mt-1">The full Revenge Arc system. Built for transformation.</p>
 
-              {/* Price */}
-              <motion.div
-                key={yearly ? "y" : "m"}
-                initial={{ opacity: 0, y: 8 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.35 }}
-                className="mt-6"
-              >
-                {yearly ? (
-                  <div>
-                    <div className="flex items-center gap-3 flex-wrap">
-                      <span className="text-white/35 line-through text-lg font-bold">${yearlyOriginal.toFixed(2)}</span>
-                      <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold tracking-wider">
-                        BEST VALUE · SAVE ${savings}
+                {/* Price */}
+                <motion.div
+                  key={yearly ? "y" : "m"}
+                  initial={{ opacity: 0, y: 8 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.35 }}
+                  className="mt-6"
+                >
+                  {yearly ? (
+                    <div>
+                      <div className="flex items-center gap-3 flex-wrap">
+                        <span className="text-white/35 line-through text-lg font-bold">${yearlyOriginal.toFixed(2)}</span>
+                        <span className="px-2 py-0.5 rounded-md bg-emerald-500/15 border border-emerald-500/40 text-emerald-300 text-[10px] font-bold tracking-wider">
+                          BEST VALUE · SAVE ${savings}
+                        </span>
+                      </div>
+                      <div className="flex items-baseline gap-2 mt-1">
+                        <div className="font-display font-extrabold text-5xl gradient-text">${yearlyDiscounted}</div>
+                        <div className="text-white/45 text-sm">/ year</div>
+                      </div>
+                      <div className="text-xs text-white/45 mt-1">Just ${(yearlyDiscounted / 12).toFixed(2)}/month — billed annually</div>
+                    </div>
+                  ) : (
+                    <div className="flex items-baseline gap-2">
+                      <div className="font-display font-extrabold text-5xl">${monthly}</div>
+                      <div className="text-white/45 text-sm">/ month</div>
+                    </div>
+                  )}
+                </motion.div>
+
+                <ul className="mt-7 grid sm:grid-cols-2 gap-x-4 gap-y-2.5">
+                  {PREMIUM_FEATURES.map((f) => (
+                    <li key={f} className="flex items-start gap-2 text-white/85">
+                      <span className="mt-0.5 h-5 w-5 rounded-full border border-purple-500/40 bg-purple-500/15 grid place-items-center flex-shrink-0">
+                        <Check className="h-3 w-3 text-purple-300" />
                       </span>
-                    </div>
-                    <div className="flex items-baseline gap-2 mt-1">
-                      <div className="font-display font-extrabold text-5xl gradient-text">${yearlyDiscounted}</div>
-                      <div className="text-white/45 text-sm">/ year</div>
-                    </div>
-                    <div className="text-xs text-white/45 mt-1">Just ${(yearlyDiscounted / 12).toFixed(2)}/month — billed annually</div>
-                  </div>
-                ) : (
-                  <div className="flex items-baseline gap-2">
-                    <div className="font-display font-extrabold text-5xl">${monthly}</div>
-                    <div className="text-white/45 text-sm">/ month</div>
-                  </div>
-                )}
-              </motion.div>
+                      <span className="text-[13px]">{f}</span>
+                    </li>
+                  ))}
+                </ul>
 
-              <ul className="mt-7 grid sm:grid-cols-2 gap-x-4 gap-y-2.5">
-                {PREMIUM_FEATURES.map((f) => (
-                  <li key={f} className="flex items-start gap-2 text-white/85">
-                    <span className="mt-0.5 h-5 w-5 rounded-full border border-purple-500/40 bg-purple-500/15 grid place-items-center flex-shrink-0">
-                      <Check className="h-3 w-3 text-purple-300" />
-                    </span>
-                    <span className="text-[13px]">{f}</span>
-                  </li>
-                ))}
-              </ul>
-
-              <a href="#waitlist" className="mt-8 btn-primary w-full justify-center" data-testid="pricing-premium-cta">
-                <Zap className="h-4 w-4" /> Lock In Early Access <ArrowRight className="h-4 w-4" />
-              </a>
-              <p className="text-center text-[11px] text-white/40 mt-3">
-                Subscriptions activate at launch — payments processed in-app.
-              </p>
+                <a href="#waitlist" className="mt-8 btn-primary w-full justify-center" data-testid="pricing-premium-cta">
+                  <Zap className="h-4 w-4" /> Lock In Early Access <ArrowRight className="h-4 w-4" />
+                </a>
+                <p className="text-center text-[11px] text-white/40 mt-3">
+                  Subscriptions activate at launch — payments processed in-app.
+                </p>
+              </div>
             </div>
           </motion.div>
         </div>

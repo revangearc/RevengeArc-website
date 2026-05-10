@@ -127,6 +127,33 @@ class Template(BaseModel):
     updated_at: str
 
 
+class SignatureCreate(BaseModel):
+    name: str = Field(..., min_length=1, max_length=120)
+    html_content: str = Field(..., min_length=1)
+
+
+class Signature(BaseModel):
+    model_config = ConfigDict(extra="ignore")
+    id: str
+    name: str
+    html_content: str
+    created_at: str
+    updated_at: str
+
+
+class BulkDelete(BaseModel):
+    ids: List[str] = Field(default_factory=list)
+    confirmation: str
+
+
+class DeleteAll(BaseModel):
+    confirmation: str
+
+
+class StatusChange(BaseModel):
+    status: Literal["pending", "approved", "rejected"]
+
+
 # ============== AUTH ==============
 
 def require_admin(authorization: Optional[str] = Header(default=None)):
@@ -259,16 +286,27 @@ async def join_waitlist(payload: WaitlistCreate):
         created_at=datetime.now(timezone.utc).isoformat(),
     )
     await db.waitlist.insert_one(entry.model_dump())
-    body = f"""
-      <p>Hey <strong style="color:#fff">{entry.full_name}</strong>,</p>
-      <p>Thanks for joining the <strong style="color:#a855f7">Revenge Arc</strong> waitlist. We'll keep you updated on future releases, early access, and announcements.</p>
-      <p style="margin-top:20px;">Stay disciplined. Stay dangerous.</p>
-      <div style="margin-top:24px;padding:16px 18px;border:1px solid rgba(34,211,238,0.25);border-radius:12px;background:rgba(34,211,238,0.06);">
-        <div style="color:#22d3ee;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:700;">YOUR ARC HAS BEGUN</div>
-        <div style="color:#fff;margin-top:6px;">Discipline built different.</div>
+    body = """
+      <p>Your revenge arc starts now.</p>
+      <p>You officially joined the waitlist for <strong class="ra-strong" style="color:#fff;">Revenge Arc</strong>.</p>
+      <p>This app was built for people chasing improvement — in the gym, mentally, physically, and in everyday life.</p>
+      <p>We created Revenge Arc because most fitness apps today feel incomplete. Too many subscriptions. Too many missing features. So we built one platform that combines everything together with powerful AI tools and tracking systems.</p>
+      <p>You'll be one of the first people to get notified when early access launches.</p>
+      <div style="margin-top:18px;padding:16px 18px;border:1px solid rgba(168,85,247,0.30);border-radius:12px;background-color:rgba(168,85,247,0.08);">
+        <div class="ra-accent" style="color:#a855f7;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:700;">EXPECT</div>
+        <ul style="margin:10px 0 0;padding-left:20px;line-height:1.7;color:#cfcfe5;">
+          <li>AI-powered fitness tools</li>
+          <li>Nutrition &amp; macro tracking</li>
+          <li>Workout systems</li>
+          <li>Progress analytics</li>
+          <li>New updates &amp; exclusive features</li>
+          <li>Community-focused improvements</li>
+        </ul>
       </div>
+      <p style="margin-top:22px;">More updates coming soon.</p>
+      <p><strong class="ra-strong" style="color:#fff;">Stay ready.</strong></p>
     """
-    await send_email_async(entry.email, "Welcome to Revenge Arc — You're In", _wrap_email("You're on the list.", body, "#a855f7"))
+    await send_email_async(entry.email, "Welcome to Revenge Arc.", _wrap_email("Your revenge arc starts now.", body, "#a855f7"))
     return entry
 
 
@@ -291,16 +329,24 @@ async def apply_creator(payload: CreatorCreate):
         created_at=datetime.now(timezone.utc).isoformat(),
     )
     await db.creators.insert_one(entry.model_dump())
-    body = f"""
-      <p>Hey <strong style="color:#fff">{entry.full_name}</strong>,</p>
-      <p>Your application for the <strong style="color:#f59e0b">Revenge Arc Creator Program</strong> has been received. Every application is manually reviewed by our team.</p>
-      <p>We'll be in touch soon — keep building, keep posting, keep grinding.</p>
-      <div style="margin-top:24px;padding:16px 18px;border:1px solid rgba(245,158,11,0.3);border-radius:12px;background:rgba(245,158,11,0.06);">
-        <div style="color:#f59e0b;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:700;">APPLICATION RECEIVED</div>
-        <div style="color:#fff;margin-top:6px;">Under manual review by the Revenge Arc team.</div>
+    body = """
+      <p>Thank you for applying to the <strong class="ra-strong" style="color:#fff;">Revenge Arc Creator Program</strong>. We appreciate you taking the time to submit your information and wanting to be part of what we're building.</p>
+      <p>Revenge Arc is more than just a fitness app — it's a platform focused on discipline, progression, self-improvement, and helping people become the best version of themselves through powerful AI tools and systems.</p>
+      <p>Your application has been received and will now go through a manual review process by our team.</p>
+      <div style="margin-top:18px;padding:16px 18px;border:1px solid rgba(245,158,11,0.30);border-radius:12px;background-color:rgba(245,158,11,0.08);">
+        <div class="ra-accent" style="color:#f59e0b;font-size:11px;letter-spacing:3px;text-transform:uppercase;font-weight:700;">IF SELECTED, WE'LL REACH BACK OUT WITH</div>
+        <ul style="margin:10px 0 0;padding-left:20px;line-height:1.7;color:#cfcfe5;">
+          <li>next steps</li>
+          <li>creator access</li>
+          <li>partnership details</li>
+          <li>compensation discussion</li>
+          <li>how the program will work moving forward</li>
+        </ul>
       </div>
+      <p style="margin-top:22px;">We're looking for creators who genuinely align with the mindset and vision behind Revenge Arc, and we appreciate everyone showing support early.</p>
+      <p><strong class="ra-strong" style="color:#fff;">More updates soon.</strong></p>
     """
-    await send_email_async(entry.email, "Revenge Arc — Creator Application Received", _wrap_email("We got your application.", body, "#f59e0b"))
+    await send_email_async(entry.email, "Your Revenge Arc creator application was received.", _wrap_email("You're officially in review.", body, "#f59e0b"))
     return entry
 
 
@@ -597,6 +643,164 @@ async def delete_template(template_id: str, _=Depends(require_admin)):
     if res.deleted_count == 0:
         raise HTTPException(status_code=404, detail="Not found")
     return {"deleted": True}
+
+
+# ----- Email Signatures -----
+
+DEFAULT_SIGNATURE_HTML = """\
+<div style="margin-top:28px;padding-top:18px;border-top:1px solid rgba(168,85,247,0.18);color:#a8a8c2;font-size:14px;line-height:1.6;">
+  — The Revenge Arc Team<br>
+  <span style="color:#7a7a96;font-size:12px;letter-spacing:2px;">DISCIPLINE BUILT DIFFERENT.</span><br>
+  <span style="color:#7a7a96;font-size:12px;">therevenge_arc</span>
+</div>"""
+
+
+async def _ensure_default_signature():
+    existing = await db.signatures.find_one({"name": "Revenge Arc Original"}, {"_id": 0})
+    if not existing:
+        now = datetime.now(timezone.utc).isoformat()
+        sig = Signature(
+            id=str(uuid.uuid4()),
+            name="Revenge Arc Original",
+            html_content=DEFAULT_SIGNATURE_HTML,
+            created_at=now,
+            updated_at=now,
+        )
+        await db.signatures.insert_one(sig.model_dump())
+
+
+@api_router.get("/admin/signatures", response_model=List[Signature])
+async def list_signatures(_=Depends(require_admin)):
+    await _ensure_default_signature()
+    rows = await db.signatures.find({}, {"_id": 0}).sort("updated_at", -1).to_list(500)
+    return rows
+
+
+@api_router.post("/admin/signatures", response_model=Signature)
+async def create_signature(payload: SignatureCreate, _=Depends(require_admin)):
+    name = payload.name.strip()
+    if await db.signatures.find_one({"name": name}, {"_id": 0}):
+        raise HTTPException(status_code=409, detail=f"A signature named '{name}' already exists.")
+    now = datetime.now(timezone.utc).isoformat()
+    sig = Signature(
+        id=str(uuid.uuid4()),
+        name=name,
+        html_content=payload.html_content,
+        created_at=now,
+        updated_at=now,
+    )
+    await db.signatures.insert_one(sig.model_dump())
+    return sig
+
+
+@api_router.put("/admin/signatures/{signature_id}", response_model=Signature)
+async def update_signature(signature_id: str, payload: SignatureCreate, _=Depends(require_admin)):
+    existing = await db.signatures.find_one({"id": signature_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Signature not found")
+    name = payload.name.strip()
+    name_clash = await db.signatures.find_one({"name": name, "id": {"$ne": signature_id}}, {"_id": 0})
+    if name_clash:
+        raise HTTPException(status_code=409, detail=f"A signature named '{name}' already exists.")
+    update = {
+        "name": name,
+        "html_content": payload.html_content,
+        "updated_at": datetime.now(timezone.utc).isoformat(),
+    }
+    await db.signatures.update_one({"id": signature_id}, {"$set": update})
+    existing.update(update)
+    return existing
+
+
+@api_router.delete("/admin/signatures/{signature_id}")
+async def delete_signature(signature_id: str, _=Depends(require_admin)):
+    res = await db.signatures.delete_one({"id": signature_id})
+    if res.deleted_count == 0:
+        raise HTTPException(status_code=404, detail="Not found")
+    return {"deleted": True}
+
+
+# ----- Bulk delete -----
+
+@api_router.post("/admin/waitlist/bulk-delete")
+async def bulk_delete_waitlist(payload: BulkDelete, _=Depends(require_admin)):
+    if payload.confirmation != "DELETE":
+        raise HTTPException(status_code=422, detail="Confirmation must be 'DELETE' (all caps).")
+    if not payload.ids:
+        return {"deleted": 0}
+    res = await db.waitlist.delete_many({"id": {"$in": payload.ids}})
+    return {"deleted": res.deleted_count}
+
+
+@api_router.delete("/admin/waitlist")
+async def delete_all_waitlist(payload: DeleteAll, _=Depends(require_admin)):
+    if payload.confirmation != "DELETE":
+        raise HTTPException(status_code=422, detail="Confirmation must be 'DELETE' (all caps).")
+    res = await db.waitlist.delete_many({})
+    return {"deleted": res.deleted_count}
+
+
+@api_router.post("/admin/creators/bulk-delete")
+async def bulk_delete_creators(payload: BulkDelete, _=Depends(require_admin)):
+    if payload.confirmation != "DELETE":
+        raise HTTPException(status_code=422, detail="Confirmation must be 'DELETE' (all caps).")
+    if not payload.ids:
+        return {"deleted": 0}
+    res = await db.creators.delete_many({"id": {"$in": payload.ids}})
+    return {"deleted": res.deleted_count}
+
+
+@api_router.delete("/admin/creators")
+async def delete_all_creators(payload: DeleteAll, _=Depends(require_admin)):
+    if payload.confirmation != "DELETE":
+        raise HTTPException(status_code=422, detail="Confirmation must be 'DELETE' (all caps).")
+    res = await db.creators.delete_many({})
+    return {"deleted": res.deleted_count}
+
+
+# ----- Status change -----
+
+@api_router.post("/admin/creators/{creator_id}/status")
+async def set_creator_status(creator_id: str, payload: StatusChange, _=Depends(require_admin)):
+    existing = await db.creators.find_one({"id": creator_id}, {"_id": 0})
+    if not existing:
+        raise HTTPException(status_code=404, detail="Not found")
+    await db.creators.update_one({"id": creator_id}, {"$set": {"status": payload.status}})
+    return {"status": payload.status}
+
+
+# ----- User search (broadcast custom recipients) -----
+
+@api_router.get("/admin/users/search")
+async def search_users(q: str = Query(default="", min_length=0, max_length=120), _=Depends(require_admin)):
+    q = (q or "").strip().lower()
+    if not q or len(q) < 2:
+        return {"results": []}
+    seen = set()
+    results = []
+    pattern = {"$regex": q.replace(".", r"\."), "$options": "i"}
+
+    async def _scan(cursor, source):
+        async for r in cursor:
+            email = (r.get("email") or "").lower()
+            if not email or email in seen:
+                continue
+            seen.add(email)
+            results.append({
+                "email": email,
+                "full_name": r.get("full_name") or "",
+                "instagram": r.get("instagram") or "",
+                "tiktok": r.get("tiktok") or "",
+                "source": source,
+                "status": r.get("status") or "",
+            })
+            if len(results) >= 20:
+                break
+
+    or_clause = [{"email": pattern}, {"full_name": pattern}, {"instagram": pattern}, {"tiktok": pattern}]
+    await _scan(db.waitlist.find({"$or": or_clause}, {"_id": 0}).limit(20), "waitlist")
+    await _scan(db.creators.find({"$or": or_clause}, {"_id": 0}).limit(20), "creator")
+    return {"results": results[:20]}
 
 
 # Mount
