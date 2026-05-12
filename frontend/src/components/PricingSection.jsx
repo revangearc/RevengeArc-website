@@ -28,7 +28,7 @@ export default function PricingSection() {
   const [yearly, setYearly] = useState(true);
   const monthly = 15.99;
   const yearlyOriginal = 191.88;
-  const yearlyDiscounted = 115.99;
+  const yearlyDiscounted = 149.88;
   const savings = (yearlyOriginal - yearlyDiscounted).toFixed(2);
   const savingsPct = Math.round(((yearlyOriginal - yearlyDiscounted) / yearlyOriginal) * 100);
 
