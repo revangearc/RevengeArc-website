@@ -1,5 +1,6 @@
 import { useState } from "react";
 import { motion } from "motion/react";
+import { Link } from "react-router-dom";
 import { Check, Sparkles, ArrowRight, Flame, Zap, Trophy } from "lucide-react";
 import SectionHeader from "./SectionHeader";
 
@@ -113,9 +114,9 @@ export default function PricingSection() {
               ))}
             </ul>
 
-            <a href="#waitlist" className="mt-8 btn-ghost w-full justify-center" data-testid="pricing-free-cta">
+            <Link to="/waitlist" className="mt-8 btn-ghost w-full justify-center" data-testid="pricing-free-cta">
               Get Started <ArrowRight className="h-4 w-4" />
-            </a>
+            </Link>
           </motion.div>
 
           {/* PREMIUM */}
@@ -185,9 +186,9 @@ export default function PricingSection() {
                   ))}
                 </ul>
 
-                <a href="#waitlist" className="mt-8 btn-primary w-full justify-center" data-testid="pricing-premium-cta">
+                <Link to="/waitlist" className="mt-8 btn-primary w-full justify-center" data-testid="pricing-premium-cta">
                   <Zap className="h-4 w-4" /> Lock In Early Access <ArrowRight className="h-4 w-4" />
-                </a>
+                </Link>
                 <p className="text-center text-[11px] text-white/40 mt-3">
                   Subscriptions activate at launch — payments processed in-app.
                 </p>

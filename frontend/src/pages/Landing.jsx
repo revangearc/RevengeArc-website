@@ -10,9 +10,8 @@ import ArenaSection from "../components/ArenaSection";
 import ProgressHubSection from "../components/ProgressHubSection";
 import ProfileSection from "../components/ProfileSection";
 import PricingSection from "../components/PricingSection";
-import CreatorProgramSection from "../components/CreatorProgramSection";
-import WaitlistSection from "../components/WaitlistSection";
 import FAQSection from "../components/FAQSection";
+import SoroBlogEmbed from "../components/SoroBlogEmbed";
 import Footer from "../components/Footer";
 
 export default function Landing() {
@@ -30,9 +29,8 @@ export default function Landing() {
       <ProgressHubSection />
       <ProfileSection />
       <PricingSection />
-      <CreatorProgramSection />
-      <WaitlistSection />
       <FAQSection />
+      <SoroBlogEmbed />
       <Footer />
     </main>
   );

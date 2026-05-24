@@ -1,4 +1,5 @@
 import { motion } from "motion/react";
+import { Link } from "react-router-dom";
 import { ArrowRight, Sparkles, Flame, Trophy } from "lucide-react";
 import ParticleField from "./ParticleField";
 import PhoneMockup from "./PhoneMockup";
@@ -55,15 +56,21 @@ export default function Hero() {
             transition={{ duration: 0.8, delay: 0.4 }}
             className="mt-9 flex flex-wrap items-center gap-3.5"
           >
-            <a href="#waitlist" className="btn-primary" data-testid="hero-waitlist-cta">
+            <Link to="/waitlist" className="btn-primary" data-testid="hero-waitlist-cta">
               <Flame className="h-4 w-4" />
               Join Waitlist
               <ArrowRight className="h-4 w-4" />
-            </a>
-            <a href="#creator" className="btn-ghost" data-testid="hero-creator-cta">
-              <Trophy className="h-4 w-4 text-amber-400" />
+            </Link>
+            <Link
+              to="/creator"
+              className="btn-primary !bg-gradient-to-r !from-amber-500 !to-orange-600 !border-amber-500/60"
+              style={{ boxShadow: "0 0 30px rgba(245,158,11,0.45), inset 0 1px 0 rgba(255,255,255,0.2)" }}
+              data-testid="hero-creator-cta"
+            >
+              <Trophy className="h-4 w-4" />
               Apply for Creator Program
-            </a>
+              <ArrowRight className="h-4 w-4" />
+            </Link>
           </motion.div>
 
           {/* Stats strip */}

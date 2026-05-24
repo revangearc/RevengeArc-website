@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import { motion, AnimatePresence } from "motion/react";
+import { useNavigate, useLocation } from "react-router-dom";
 import { Menu, X, Flame, ChevronDown, Apple, MessageSquare, Dumbbell, Swords, Users, BarChart3, UserCircle2, Camera } from "lucide-react";
 
 const FEATURE_ITEMS = [
@@ -17,7 +18,7 @@ const FEATURE_ITEMS = [
 const TOP_LINKS = [
   { href: "#features", label: "Features", dropdown: true },
   { href: "#pricing", label: "Pricing" },
-  { href: "#creator", label: "Creators" },
+  { href: "/creator", label: "Creators" },
   { href: "/blog", label: "Blog" },
   { href: "#faq", label: "FAQ" },
 ];
@@ -26,6 +27,8 @@ export default function Navbar() {
   const [scrolled, setScrolled] = useState(false);
   const [open, setOpen] = useState(false);
   const [featuresOpen, setFeaturesOpen] = useState(false);
+  const navigate = useNavigate();
+  const location = useLocation();
 
   useEffect(() => {
     const onScroll = () => setScrolled(window.scrollY > 30);
@@ -33,13 +36,33 @@ export default function Navbar() {
     return () => window.removeEventListener("scroll", onScroll);
   }, []);
 
+  // When landing arrives with a hash (e.g. via /#pricing), scroll to it after mount
+  useEffect(() => {
+    if (location.pathname === "/" && location.hash) {
+      const id = location.hash.slice(1);
+      // Slight delay so the section is rendered + animated
+      setTimeout(() => {
+        const el = document.getElementById(id);
+        if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
+      }, 200);
+    }
+  }, [location]);
+
   const goTo = (href) => {
     setOpen(false);
     setFeaturesOpen(false);
     if (href.startsWith("#")) {
       const id = href.slice(1);
+      // If we're not on the landing page, navigate home first then scroll
+      if (location.pathname !== "/") {
+        navigate(`/${href}`);
+        return;
+      }
       const target = document.getElementById(id);
       if (target) target.scrollIntoView({ behavior: "smooth", block: "start" });
+    } else if (href.startsWith("/")) {
+      navigate(href);
+      window.scrollTo({ top: 0, behavior: "smooth" });
     } else {
       window.location.href = href;
     }
@@ -121,7 +144,7 @@ export default function Navbar() {
         </nav>
 
         <div className="flex items-center gap-2.5 flex-shrink-0">
-          <button onClick={() => goTo("#waitlist")} className="hidden sm:inline-flex btn-primary !py-2.5 !px-5 !text-sm" data-testid="nav-waitlist-btn">
+          <button onClick={() => goTo("/waitlist")} className="hidden sm:inline-flex btn-primary !py-2.5 !px-5 !text-sm" data-testid="nav-waitlist-btn">
             Join Waitlist
           </button>
           <button
@@ -152,10 +175,10 @@ export default function Navbar() {
                 </button>
               ))}
               <div className="text-[10px] tracking-[0.3em] text-white/45 font-bold px-3 mt-3 mb-1">EXPLORE</div>
-              {[{h:"#pricing",l:"Pricing"},{h:"#creator",l:"Creators"},{h:"/blog",l:"Blog"},{h:"#faq",l:"FAQ"}].map(x=>(
+              {[{h:"#pricing",l:"Pricing"},{h:"/creator",l:"Creators"},{h:"/blog",l:"Blog"},{h:"#faq",l:"FAQ"}].map(x=>(
                 <button key={x.h} onClick={()=>goTo(x.h)} className="py-2.5 px-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg text-left">{x.l}</button>
               ))}
-              <button onClick={() => goTo("#waitlist")} className="btn-primary justify-center mt-3">Join Waitlist</button>
+              <button onClick={() => goTo("/waitlist")} className="btn-primary justify-center mt-3">Join Waitlist</button>
             </div>
           </motion.div>
         )}

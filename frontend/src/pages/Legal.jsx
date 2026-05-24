@@ -218,7 +218,7 @@ export function ContactPage() {
       </div>
 
       <H>Creator Partnerships</H>
-      <P>Submit your application via the <Link to="/#creator" className="text-purple-300 hover:text-purple-200">Creator Program form</Link> on the homepage. Every application is reviewed manually.</P>
+      <P>Submit your application via the <Link to="/creator" className="text-purple-300 hover:text-purple-200">Creator Program page</Link>. Every application is reviewed manually.</P>
 
       <H>Press</H>
       <P>Press inquiries: email <a className="text-purple-300 hover:text-purple-200" href={`mailto:${SUPPORT_EMAIL}`}>{SUPPORT_EMAIL}</a> with subject line "Press —".</P>
