@@ -5,7 +5,7 @@ import { motion } from "motion/react";
 import { SUPPORT_EMAIL } from "../lib/mockups";
 
 // Soro blog embed configuration (public widget — no secrets)
-const SORO_SCRIPT_SRC = "https://app.trysoro.com/api/embed/010625d8-8d48-451f-b0c3-4cdab9a6754e";
+const SORO_SCRIPT_SRC = "https://app.trysoro.com/api/embed/010625d8-8d48-451f-b0c3-4cdab9a6754e?theme=dark";
 const SORO_SCRIPT_ID = "soro-blog-script";
 
 export default function BlogPage() {

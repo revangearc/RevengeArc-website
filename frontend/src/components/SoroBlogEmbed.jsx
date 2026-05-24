@@ -3,7 +3,7 @@ import { BookOpen, Loader2 } from "lucide-react";
 import { motion } from "motion/react";
 
 // Public Soro widget — no secrets. Lazy-loads only when this component mounts.
-const SORO_SCRIPT_SRC = "https://app.trysoro.com/api/embed/010625d8-8d48-451f-b0c3-4cdab9a6754e";
+const SORO_SCRIPT_SRC = "https://app.trysoro.com/api/embed/010625d8-8d48-451f-b0c3-4cdab9a6754e?theme=dark";
 const SORO_SCRIPT_ID = "soro-blog-script";
 
 /**
