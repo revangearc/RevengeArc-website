@@ -84,8 +84,8 @@ export default function Hero() {
               { v: "AI", l: "Powered" },
               { v: "Smooth", l: "Tracking" },
               { v: "Built", l: "Different" },
-            ].map((s, i) => (
-              <div key={i} className="glass rounded-2xl px-3 sm:px-4 py-3.5 sm:py-4 min-w-0">
+            ].map((s) => (
+              <div key={s.v} className="glass rounded-2xl px-3 sm:px-4 py-3.5 sm:py-4 min-w-0">
                 <div className="font-display font-extrabold text-base sm:text-lg lg:text-xl text-white whitespace-nowrap">{s.v}</div>
                 <div className="text-[10px] sm:text-[11px] tracking-[0.2em] sm:tracking-[0.25em] text-white/45 mt-1 truncate">{s.l}</div>
               </div>
@@ -142,7 +142,7 @@ export default function Hero() {
       >
         <div className="marquee py-3.5 text-xs font-bold tracking-[0.4em] text-white/35 uppercase">
           {Array.from({ length: 2 }).map((_, k) => (
-            <div key={k} className="flex items-center gap-10 px-6">
+            <div key={`marquee-${k}`} className="flex items-center gap-10 px-6">
               {["Disciplined", "Cinematic", "AI Powered", "Built Different", "No Excuses", "Movement", "Earned Not Given", "Warrior Mode"].map((w, i) => (
                 <span key={`${k}-${i}`} className="flex items-center gap-10">
                   {w}

@@ -64,7 +64,7 @@ export default function GymBuddieSection() {
             <div className="mt-5 space-y-3 max-h-[280px] overflow-hidden">
               {messages.map((m, i) => (
                 <motion.div
-                  key={i}
+                  key={`${m.from}-${i}`}
                   initial={{ opacity: 0, x: m.from === "user" ? 16 : -16, y: 10 }}
                   whileInView={{ opacity: 1, x: 0, y: 0 }}
                   viewport={{ once: true }}

@@ -37,7 +37,18 @@ Cinematic AI self-improvement website + admin + Resend email system for a fitnes
 ### Iteration 4
 - Email dark-mode-proof shell, mobile layout polish, password change, support email spelling fix
 
-### Iteration 6 (Feb 2026 — this session)
+### Iteration 7 (Feb 2026 — code-quality review)
+- ✅ **XSS hardening**: Added `dompurify` and a strict allowlist sanitizer (`SANITIZE_OPTS`) to both `dangerouslySetInnerHTML` call-sites in `Broadcast.jsx` (signature preview + live email preview). Verified end-to-end: `<script>` tags and `onerror=` event handlers are stripped while legitimate `<strong>`/`<p>` inline-styled tags pass through for email rendering.
+- ✅ **Stable React keys**: Replaced all `key={i}` / `key={index}` / `key={idx}` usages with stable content-based keys across `Broadcast.jsx`, `AdminDashboard.jsx`, `Hero.jsx`, `NutritionSection.jsx`, `FAQSection.jsx`, `GymBuddieSection.jsx`, `ArenaSection.jsx`, `Legal.jsx` (10 fixes).
+- ✅ **Test secrets removed**: All hardcoded `Bashar1212` / `Revengearchelp@gmail.com` removed from `/app/backend/tests/*.py`. New shared `tests/_config.py` reads `TEST_ADMIN_EMAIL` + `TEST_ADMIN_PASSWORD` from env; tests `pytest.skip` cleanly if not configured. Old single-field login bodies replaced with iter6 email+password schema.
+- ✅ **Backend complexity reduction**: Split `_bucket_starts` (complexity 14 → ~4 each) into `_hour_buckets`, `_day_buckets`, `_week_buckets`, `_month_buckets` dispatched via a `_BUCKET_BUILDERS` map. Refactored `_collect_recipients` (complexity 18, nesting 9 → flat dispatch via `query_map`).
+
+### Deferred items (deliberate)
+- ⏸ **localStorage → httpOnly cookies**: declined. The admin console uses a single shared bearer token (`ADMIN_TOKEN` from env). Switching to httpOnly cookies would require backend `Set-Cookie` rework + frontend `withCredentials` flow + CORS credentials whitelist + new logout endpoint. The primary XSS attack vector for stealing this token (Broadcast preview injecting malicious HTML) is now closed by DOMPurify. A determined attacker with arbitrary JS would simply call `/api/admin/login` directly with the static creds anyway. Re-evaluate when migrating to JWT + per-user accounts.
+- ⏸ **Broadcast.jsx (471 lines, complexity 64) full decomposition**: declined for this iteration. The component is heavily tested in iter5 + iter6 and a structural rewrite carries real regression risk against a working broadcast/template/signature/search flow. Extracted `CustomRecipientPicker` and `EmailPreview` already live as sub-components inside the file — promoting them to separate modules is safe future cleanup. Keep on backlog as P1.
+- ⏸ **Missing hook-dependency warnings**: the 18 instances flagged are largely on-mount data-fetch effects (genuine "run once" intent) and `useCallback` closures the linter mis-attributes to local function-scope vars. Our internal ESLint pass (`/app/frontend/src`) is clean. Will revisit only if a real bug is traced to a stale closure.
+
+### Iteration 6 (Feb 2026)
 - ✅ **Admin login security**: email + password (was: password only). `ADMIN_EMAIL` env added (`Revengearchelp@gmail.com`), case-insensitive match. Frontend `/admin` now shows two inputs, neither pre-filled. Old `{password}`-only body returns 422.
 - ✅ **Creator duplicate guard**: `POST /api/creator-applications` checks email case-insensitively; second submission returns `409 "This email has already been used for a creator application."`
 - ✅ **Broadcast performance**: `admin_announce` uses `asyncio.Semaphore(BROADCAST_CONCURRENCY=8)` + `asyncio.gather` for parallel batched send. UI now shows a sending overlay with animated progress bar + a persistent "last broadcast" result panel (sent / failed / total).

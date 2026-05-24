@@ -343,7 +343,7 @@ function GrowthChart({ growth, max }) {
         <motion.path d={wlPath} fill="none" stroke="#a855f7" strokeWidth="2.5" strokeLinecap="round" strokeLinejoin="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.4, ease: [0.22, 1, 0.36, 1] }} style={{ filter: "drop-shadow(0 0 8px rgba(168,85,247,0.5))" }} />
         <motion.path d={crPath} fill="none" stroke="#f59e0b" strokeWidth="2" strokeDasharray="5 4" strokeLinecap="round" strokeLinejoin="round" initial={{ pathLength: 0 }} animate={{ pathLength: 1 }} transition={{ duration: 1.4, delay: 0.2, ease: [0.22, 1, 0.36, 1] }} />
         {growth.map((g, i) => (
-          <g key={i}>
+          <g key={g.date || g.label || `growth-${i}`}>
             <circle cx={padX + i * stepX} cy={yScale(g.waitlist)} r={hover?.i === i ? "5" : "3"} fill={hover?.i === i ? "#a855f7" : "#fff"} stroke="#a855f7" strokeWidth="2" style={{ transition: "r 0.15s" }} />
             <circle cx={padX + i * stepX} cy={yScale(g.creators)} r={hover?.i === i ? "4" : "2.5"} fill={hover?.i === i ? "#f59e0b" : "#0a0814"} stroke="#f59e0b" strokeWidth="2" style={{ transition: "r 0.15s" }} />
           </g>
@@ -388,8 +388,8 @@ function GrowthChart({ growth, max }) {
         )}
       </AnimatePresence>
       <div className="flex justify-between mt-1 text-[9px] text-white/35 font-bold tracking-wider px-2">
-        {growth.filter((_, i) => i % Math.ceil(growth.length / 8) === 0 || i === growth.length - 1).map((g, i) => (
-          <span key={i}>{g.label}</span>
+        {growth.filter((_, i) => i % Math.ceil(growth.length / 8) === 0 || i === growth.length - 1).map((g) => (
+          <span key={g.date || g.label}>{g.label}</span>
         ))}
       </div>
     </div>

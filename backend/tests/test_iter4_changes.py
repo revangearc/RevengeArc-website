@@ -1,8 +1,7 @@
 """Iteration 4 targeted backend tests:
-- Admin password changed to 'Bashar1212'; old password 'RevengeArc2026!' must reject
-- /api/config/public returns Revengearchelp@gmail.com (lowercase 'arc')
-- Email shell (_wrap_email) contains comprehensive dark-mode markers and new support email
-- Waitlist signup still works end-to-end with new password / new support email
+- Admin password / support email regression checks
+- Email shell (_wrap_email) contains dark-mode markers and configured support email
+- Waitlist signup still works end-to-end
 """
 import os
 import sys
@@ -10,10 +9,12 @@ import uuid
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://arc-preview-2.preview.emergentagent.com").rstrip("/")
-NEW_PASSWORD = "Bashar1212"
-OLD_PASSWORD = "RevengeArc2026!"
-SUPPORT_EMAIL = "Revengearchelp@gmail.com"
+from ._config import API_BASE as BASE_URL, ADMIN_PASSWORD, ADMIN_EMAIL, require_admin_creds
+
+# Any non-matching password is treated as an invalid-credential probe.
+# Set TEST_OLD_ADMIN_PASSWORD in env if you want to verify a specific rotated-out value.
+OLD_PASSWORD = os.environ.get("TEST_OLD_ADMIN_PASSWORD", "definitely-not-the-password")
+SUPPORT_EMAIL = os.environ.get("TEST_SUPPORT_EMAIL", "Revengearchelp@gmail.com")
 
 
 def _email(prefix="user"):
@@ -29,7 +30,8 @@ def session():
 
 @pytest.fixture(scope="session")
 def admin_headers(session):
-    r = session.post(f"{BASE_URL}/api/admin/login", json={"password": NEW_PASSWORD})
+    require_admin_creds()
+    r = session.post(f"{BASE_URL}/api/admin/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
     assert r.status_code == 200, r.text
     return {"Authorization": f"Bearer {r.json()['token']}", "Content-Type": "application/json"}
 
@@ -37,17 +39,20 @@ def admin_headers(session):
 # ===================== Admin password rotation =====================
 class TestAdminPassword:
     def test_new_password_works(self, session):
-        r = session.post(f"{BASE_URL}/api/admin/login", json={"password": NEW_PASSWORD})
+        require_admin_creds()
+        r = session.post(f"{BASE_URL}/api/admin/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
         assert r.status_code == 200
         assert "token" in r.json()
         assert isinstance(r.json()["token"], str)
 
     def test_old_password_rejected(self, session):
-        r = session.post(f"{BASE_URL}/api/admin/login", json={"password": OLD_PASSWORD})
+        require_admin_creds()
+        r = session.post(f"{BASE_URL}/api/admin/login", json={"email": ADMIN_EMAIL, "password": OLD_PASSWORD})
         assert r.status_code == 401
 
     def test_empty_password_rejected(self, session):
-        r = session.post(f"{BASE_URL}/api/admin/login", json={"password": ""})
+        require_admin_creds()
+        r = session.post(f"{BASE_URL}/api/admin/login", json={"email": ADMIN_EMAIL, "password": ""})
         assert r.status_code in (400, 401, 422)
 
 

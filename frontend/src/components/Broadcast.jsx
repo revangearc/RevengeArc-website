@@ -7,6 +7,7 @@ import {
   Search, Plus, PenLine, Mail,
 } from "lucide-react";
 import { toast } from "sonner";
+import DOMPurify from "dompurify";
 import {
   sendAnnouncement, fetchRecipientCounts, fetchTemplates, createTemplate,
   updateTemplate, deleteTemplate, fetchSignatures, createSignature, updateSignature,
@@ -14,6 +15,24 @@ import {
 } from "../lib/api";
 import { SUPPORT_EMAIL } from "../lib/mockups";
 import PortalPopover from "./PortalPopover";
+
+// Strict-but-permissive sanitiser for the admin-authored email HTML.
+// We allow inline styles (needed for email-client rendering) but strip all
+// script/iframe/event-handler vectors. The same sanitiser is used for both
+// the signature preview and the live email body preview.
+const SANITIZE_OPTS = {
+  ALLOWED_TAGS: [
+    "a", "p", "br", "strong", "b", "em", "i", "u", "s", "span", "div",
+    "h1", "h2", "h3", "h4", "h5", "h6", "ul", "ol", "li", "hr", "img",
+    "blockquote", "code", "pre", "small", "table", "thead", "tbody",
+    "tr", "td", "th",
+  ],
+  ALLOWED_ATTR: ["href", "src", "alt", "title", "style", "target", "rel"],
+  ALLOWED_URI_REGEXP: /^(?:(?:https?|mailto|tel|data):|[^a-z]|[a-z+.-]+(?:[^a-z+.\-:]|$))/i,
+  FORBID_TAGS: ["script", "iframe", "object", "embed", "form", "input", "button"],
+  FORBID_ATTR: ["onerror", "onclick", "onload", "onmouseover", "onfocus", "onblur"],
+};
+const sanitize = (html) => DOMPurify.sanitize(html || "", SANITIZE_OPTS);
 
 const GROUPS = [
   { id: "waitlist", label: "Waitlist", icon: Users, accent: "purple", desc: "Everyone on the waitlist" },
@@ -334,7 +353,7 @@ export default function Broadcast({ prefillRecipients = [], onPrefillUsed }) {
             </div>
             <div className="flex flex-wrap items-center gap-1.5 p-2 rounded-t-xl border border-purple-500/30 bg-[#0c0a18] border-b-0">
               {tools.map((t, i) => (
-                <button key={i} type="button" onClick={t.action} title={t.title} className="h-9 w-9 rounded-lg border border-white/10 bg-white/4 hover:bg-purple-500/15 hover:border-purple-500/40 text-white/80 hover:text-white grid place-items-center transition" data-testid={`toolbar-${t.title.toLowerCase().replace(/\s+/g, "-")}`}>
+                <button key={t.title} type="button" onClick={t.action} title={t.title} className="h-9 w-9 rounded-lg border border-white/10 bg-white/4 hover:bg-purple-500/15 hover:border-purple-500/40 text-white/80 hover:text-white grid place-items-center transition" data-testid={`toolbar-${t.title.toLowerCase().replace(/\s+/g, "-")}`}>
                   <t.icon className="h-4 w-4" />
                 </button>
               ))}
@@ -411,7 +430,7 @@ export default function Broadcast({ prefillRecipients = [], onPrefillUsed }) {
               />
               <div className="mt-3 rounded-xl border border-white/10 bg-[#05050a] p-4">
                 <div className="text-[10px] tracking-[0.3em] text-white/45 font-bold mb-2">PREVIEW</div>
-                <div className="text-white text-sm" dangerouslySetInnerHTML={{ __html: editingSig.html_content }} />
+                <div className="text-white text-sm" dangerouslySetInnerHTML={{ __html: sanitize(editingSig.html_content) }} />
               </div>
               <div className="mt-5 flex items-center gap-2.5">
                 <button onClick={() => setShowSigModal(false)} className="btn-ghost flex-1 justify-center">Cancel</button>
@@ -698,7 +717,7 @@ function EmailPreview({ subject, html }) {
           </div>
           <div style={{ padding: "22px 24px", color: "#cfcfe5", fontSize: "14px", lineHeight: 1.7 }}>
             <p style={{ margin: 0 }}>Hey <strong style={{ color: "#fff" }}>warrior</strong>,</p>
-            <div dangerouslySetInnerHTML={{ __html: html || '<p style="color:#7a7a96;font-style:italic;margin-top:10px;">Your message body will render here in real-time.</p>' }} />
+            <div dangerouslySetInnerHTML={{ __html: html ? sanitize(html) : '<p style="color:#7a7a96;font-style:italic;margin-top:10px;">Your message body will render here in real-time.</p>' }} />
           </div>
           <div style={{ padding: "18px 24px", borderTop: "1px solid rgba(168,85,247,0.18)", textAlign: "center" }}>
             <div style={{ marginBottom: "12px" }}>

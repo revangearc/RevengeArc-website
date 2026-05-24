@@ -1,12 +1,10 @@
 """Iter3 tests: sender, public config, stats range, recipient counts (with new groups),
 custom announce, templates CRUD, creator filter, creator no-compensation_type."""
-import os
 import uuid
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
-ADMIN_PASSWORD = "Bashar1212"
+from ._config import API_BASE as BASE_URL, ADMIN_PASSWORD, ADMIN_EMAIL, require_admin_creds
 
 
 def _email(prefix="user"):
@@ -22,7 +20,8 @@ def s():
 
 @pytest.fixture(scope="session")
 def admin_headers(s):
-    r = s.post(f"{BASE_URL}/api/admin/login", json={"password": ADMIN_PASSWORD})
+    require_admin_creds()
+    r = s.post(f"{BASE_URL}/api/admin/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
     assert r.status_code == 200
     return {"Authorization": f"Bearer {r.json()['token']}", "Content-Type": "application/json"}
 

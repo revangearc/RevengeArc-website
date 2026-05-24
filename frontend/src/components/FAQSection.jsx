@@ -28,7 +28,7 @@ export default function FAQSection() {
             const isOpen = open === i;
             return (
               <motion.div
-                key={i}
+                key={it.q}
                 initial={{ opacity: 0, y: 14 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}

@@ -6,14 +6,12 @@ Iteration 6 backend tests:
 - Regression on iter5 endpoints
 NOTE: Does NOT trigger /api/admin/announce (Resend quota exhausted).
 """
-import os
 import uuid
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "").rstrip("/")
-ADMIN_EMAIL = "Revengearchelp@gmail.com"
-ADMIN_PASSWORD = "Bashar1212"
+from ._config import API_BASE as BASE_URL, ADMIN_PASSWORD, ADMIN_EMAIL, require_admin_creds
+
 API = f"{BASE_URL}/api"
 
 
@@ -21,6 +19,7 @@ API = f"{BASE_URL}/api"
 
 @pytest.fixture(scope="session")
 def admin_token():
+    require_admin_creds()
     r = requests.post(f"{API}/admin/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}, timeout=15)
     assert r.status_code == 200, f"admin login failed: {r.status_code} {r.text}"
     return r.json()["token"]

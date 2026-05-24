@@ -60,8 +60,8 @@ const H = ({ children }) => <h2 className="font-display font-extrabold text-2xl 
 const P = ({ children }) => <p className="text-white/75 leading-relaxed mb-3 text-[15px]">{children}</p>;
 const Ul = ({ items }) => (
   <ul className="space-y-2 mb-3">
-    {items.map((i, idx) => (
-      <li key={idx} className="text-white/75 text-[15px] flex items-start gap-2.5">
+    {items.map((i) => (
+      <li key={typeof i === "string" ? i : JSON.stringify(i)} className="text-white/75 text-[15px] flex items-start gap-2.5">
         <span className="mt-2 h-1.5 w-1.5 rounded-full bg-purple-400 flex-shrink-0" />
         <span>{i}</span>
       </li>

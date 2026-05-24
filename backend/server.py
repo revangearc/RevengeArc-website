@@ -403,49 +403,72 @@ RANGE_MAP = {
 }
 
 
+def _hour_buckets(now, count):
+    end = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
+    return [
+        (end - timedelta(hours=i + 1), end - timedelta(hours=i),
+         (end - timedelta(hours=i + 1)).strftime("%Hh"))
+        for i in range(count - 1, -1, -1)
+    ]
+
+
+def _day_buckets(now, count):
+    today = datetime(now.year, now.month, now.day, tzinfo=timezone.utc)
+    return [
+        (today - timedelta(days=i), today - timedelta(days=i - 1),
+         (today - timedelta(days=i)).strftime("%b %d"))
+        for i in range(count - 1, -1, -1)
+    ]
+
+
+def _week_buckets(now, count):
+    end = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
+    return [
+        (end - timedelta(weeks=i + 1), end - timedelta(weeks=i),
+         (end - timedelta(weeks=i + 1)).strftime("%b %d"))
+        for i in range(count - 1, -1, -1)
+    ]
+
+
+def _prev_month_start(d):
+    y = d.year - (1 if d.month == 1 else 0)
+    m = 12 if d.month == 1 else d.month - 1
+    return datetime(y, m, 1, tzinfo=timezone.utc)
+
+
+def _next_month_start(d):
+    y = d.year + (1 if d.month == 12 else 0)
+    m = 1 if d.month == 12 else d.month + 1
+    return datetime(y, m, 1, tzinfo=timezone.utc)
+
+
+def _month_buckets(now, count):
+    cur = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
+    months = []
+    for _ in range(count):
+        months.append(cur)
+        cur = _prev_month_start(cur)
+    months.reverse()
+    out = []
+    for i, s in enumerate(months):
+        e = months[i + 1] if i + 1 < len(months) else _next_month_start(s)
+        out.append((s, e, s.strftime("%b %y")))
+    return out
+
+
+_BUCKET_BUILDERS = {
+    "hour": _hour_buckets,
+    "day": _day_buckets,
+    "week": _week_buckets,
+    "month": _month_buckets,
+}
+
+
 def _bucket_starts(range_key: str):
     """Return list of (start_dt, end_dt, label) buckets covering the range."""
     now = datetime.now(timezone.utc)
-    days_back, unit, count = RANGE_MAP.get(range_key, RANGE_MAP["14d"])
-    buckets = []
-    if unit == "hour":
-        end = now.replace(minute=0, second=0, microsecond=0) + timedelta(hours=1)
-        for i in range(count - 1, -1, -1):
-            s = end - timedelta(hours=i + 1)
-            e = end - timedelta(hours=i)
-            buckets.append((s, e, s.strftime("%Hh")))
-    elif unit == "day":
-        today = datetime(now.year, now.month, now.day, tzinfo=timezone.utc)
-        for i in range(count - 1, -1, -1):
-            s = today - timedelta(days=i)
-            e = s + timedelta(days=1)
-            buckets.append((s, e, s.strftime("%b %d")))
-    elif unit == "week":
-        end = now.replace(hour=0, minute=0, second=0, microsecond=0) + timedelta(days=1)
-        for i in range(count - 1, -1, -1):
-            s = end - timedelta(weeks=i + 1)
-            e = end - timedelta(weeks=i)
-            buckets.append((s, e, s.strftime("%b %d")))
-    else:  # month
-        # 12 months back
-        cur = datetime(now.year, now.month, 1, tzinfo=timezone.utc)
-        months = []
-        for _ in range(count):
-            months.append(cur)
-            y = cur.year - (1 if cur.month == 1 else 0)
-            m = 12 if cur.month == 1 else cur.month - 1
-            cur = datetime(y, m, 1, tzinfo=timezone.utc)
-        months.reverse()
-        for i, s in enumerate(months):
-            if i + 1 < len(months):
-                e = months[i + 1]
-            else:
-                # next month
-                y = s.year + (1 if s.month == 12 else 0)
-                m = 1 if s.month == 12 else s.month + 1
-                e = datetime(y, m, 1, tzinfo=timezone.utc)
-            buckets.append((s, e, s.strftime("%b %y")))
-    return buckets
+    _, unit, count = RANGE_MAP.get(range_key, RANGE_MAP["14d"])
+    return _BUCKET_BUILDERS[unit](now, count)
 
 
 @api_router.get("/admin/stats")
@@ -561,35 +584,37 @@ async def email_creator(creator_id: str, payload: CreatorEmail, _=Depends(requir
 # ----- Recipient counts & broadcast -----
 
 async def _collect_recipients(group: str, custom: Optional[List[str]] = None):
-    seen = set()
-    out = []
+    """Resolve a recipient_group string into a deduped list of {email, full_name}."""
+    seen: set[str] = set()
+    out: list[dict] = []
 
-    async def _add_from(cursor):
+    def _add(email: str, name: Optional[str] = None):
+        email = (email or "").strip().lower()
+        if email and "@" in email and email not in seen:
+            seen.add(email)
+            out.append({"email": email, "full_name": name or "warrior"})
+
+    async def _add_cursor(cursor):
         async for r in cursor:
-            email = (r.get("email") or "").lower()
-            if email and email not in seen:
-                seen.add(email)
-                out.append({"email": email, "full_name": r.get("full_name") or "warrior"})
+            _add(r.get("email", ""), r.get("full_name"))
 
-    if group == "waitlist":
-        await _add_from(db.waitlist.find({}, {"_id": 0, "email": 1, "full_name": 1}))
-    elif group == "creator_applicants":
-        await _add_from(db.creators.find({}, {"_id": 0, "email": 1, "full_name": 1}))
-    elif group == "approved_creators":
-        await _add_from(db.creators.find({"status": "approved"}, {"_id": 0, "email": 1, "full_name": 1}))
-    elif group == "iphone_users":
-        await _add_from(db.waitlist.find({"device_type": "iPhone"}, {"_id": 0, "email": 1, "full_name": 1}))
-    elif group == "android_users":
-        await _add_from(db.waitlist.find({"device_type": "Android"}, {"_id": 0, "email": 1, "full_name": 1}))
+    proj = {"_id": 0, "email": 1, "full_name": 1}
+    query_map = {
+        "waitlist": (db.waitlist, {}),
+        "creator_applicants": (db.creators, {}),
+        "approved_creators": (db.creators, {"status": "approved"}),
+        "iphone_users": (db.waitlist, {"device_type": "iPhone"}),
+        "android_users": (db.waitlist, {"device_type": "Android"}),
+    }
+    if group in query_map:
+        coll, q = query_map[group]
+        await _add_cursor(coll.find(q, proj))
     elif group == "everyone":
-        await _add_from(db.waitlist.find({}, {"_id": 0, "email": 1, "full_name": 1}))
-        await _add_from(db.creators.find({}, {"_id": 0, "email": 1, "full_name": 1}))
+        await _add_cursor(db.waitlist.find({}, proj))
+        await _add_cursor(db.creators.find({}, proj))
     elif group == "custom":
         for raw in (custom or []):
-            email = (raw or "").strip().lower()
-            if email and email not in seen and "@" in email:
-                seen.add(email)
-                out.append({"email": email, "full_name": "warrior"})
+            _add(raw)
     return out
 
 

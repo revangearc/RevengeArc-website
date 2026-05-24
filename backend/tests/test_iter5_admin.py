@@ -7,14 +7,11 @@ Iteration 5 backend tests:
 - Signature CRUD (incl. default signature auto-creation and 409 on duplicate)
 - Regression: public waitlist + creator-application endpoints still create rows
 """
-import os
 import uuid
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://arc-preview-2.preview.emergentagent.com").rstrip("/")
-ADMIN_PASSWORD = "Bashar1212"
-ADMIN_EMAIL = "Revengearchelp@gmail.com"
+from ._config import API_BASE as BASE_URL, ADMIN_PASSWORD, ADMIN_EMAIL, require_admin_creds
 
 API = f"{BASE_URL}/api"
 
@@ -23,6 +20,7 @@ API = f"{BASE_URL}/api"
 
 @pytest.fixture(scope="session")
 def admin_token():
+    require_admin_creds()
     r = requests.post(f"{API}/admin/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD}, timeout=15)
     assert r.status_code == 200, f"admin login failed: {r.status_code} {r.text}"
     token = r.json().get("token")

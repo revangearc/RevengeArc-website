@@ -106,8 +106,8 @@ function AIFoodScanCard_unused() {
             { l: "Photo Scan", v: "AI Vision" },
             { l: "Barcode", v: "10M+ DB" },
             { l: "Voice Log", v: "Hands-free" },
-          ].map((s, i) => (
-            <div key={i} className="rounded-xl border border-cyan-400/20 bg-cyan-500/5 p-3">
+          ].map((s) => (
+            <div key={s.l} className="rounded-xl border border-cyan-400/20 bg-cyan-500/5 p-3">
               <div className="text-[10px] tracking-[0.3em] text-cyan-300/80 font-bold">{s.l.toUpperCase()}</div>
               <div className="font-display font-bold text-white mt-1">{s.v}</div>
             </div>

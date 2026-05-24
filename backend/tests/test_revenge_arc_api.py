@@ -1,11 +1,9 @@
 """Backend test suite for Revenge Arc API."""
-import os
 import uuid
 import pytest
 import requests
 
-BASE_URL = os.environ.get("REACT_APP_BACKEND_URL", "https://arc-preview-2.preview.emergentagent.com").rstrip("/")
-ADMIN_PASSWORD = "Bashar1212"
+from ._config import API_BASE as BASE_URL, ADMIN_PASSWORD, ADMIN_EMAIL, require_admin_creds
 
 
 def _email(prefix="user"):
@@ -21,7 +19,8 @@ def session():
 
 @pytest.fixture(scope="session")
 def admin_token(session):
-    r = session.post(f"{BASE_URL}/api/admin/login", json={"password": ADMIN_PASSWORD})
+    require_admin_creds()
+    r = session.post(f"{BASE_URL}/api/admin/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
     assert r.status_code == 200, r.text
     return r.json()["token"]
 
@@ -156,11 +155,13 @@ class TestCreators:
 # ===================== Admin auth =====================
 class TestAdminAuth:
     def test_login_wrong_password(self, session):
-        r = session.post(f"{BASE_URL}/api/admin/login", json={"password": "wrong"})
+        require_admin_creds()
+        r = session.post(f"{BASE_URL}/api/admin/login", json={"email": ADMIN_EMAIL, "password": "wrong"})
         assert r.status_code == 401
 
     def test_login_correct_password(self, session):
-        r = session.post(f"{BASE_URL}/api/admin/login", json={"password": ADMIN_PASSWORD})
+        require_admin_creds()
+        r = session.post(f"{BASE_URL}/api/admin/login", json={"email": ADMIN_EMAIL, "password": ADMIN_PASSWORD})
         assert r.status_code == 200
         assert "token" in r.json()
         assert isinstance(r.json()["token"], str)

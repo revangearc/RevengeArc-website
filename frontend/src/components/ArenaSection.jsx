@@ -79,7 +79,7 @@ export default function ArenaSection() {
           <div className="mt-5 space-y-4">
             {posts.map((p, i) => (
               <motion.div
-                key={i}
+                key={p.name + p.rank}
                 initial={{ opacity: 0, y: 30 }}
                 whileInView={{ opacity: 1, y: 0 }}
                 viewport={{ once: true }}
