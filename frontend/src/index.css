@@ -390,3 +390,15 @@ a[href*="emergent.com"],
 
 /* No transition on theme switch */
 .no-flash { color-scheme: dark; }
+
+/* Soro blog widget — gentle dark-theme defaults (only kick in if Soro renders raw HTML).
+   We avoid heavy overrides so Soro's own styling stays intact. */
+.soro-blog-container { color: #e7e7ef; min-height: 240px; }
+.soro-blog-container a { color: #c4b5fd; }
+.soro-blog-container a:hover { color: #ddd6fe; }
+.soro-blog-container h1,
+.soro-blog-container h2,
+.soro-blog-container h3,
+.soro-blog-container h4 { color: #ffffff; }
+.soro-blog-container img { max-width: 100%; border-radius: 12px; }
+

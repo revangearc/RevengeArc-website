@@ -5,6 +5,7 @@ import { Toaster } from "sonner";
 import Landing from "./pages/Landing";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
+import BlogPage from "./pages/Blog";
 import { TermsPage, PrivacyPage, RefundPage, ContactPage, SupportPage } from "./pages/Legal";
 
 function App() {
@@ -19,6 +20,7 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
+          <Route path="/blog" element={<BlogPage />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/refund" element={<RefundPage />} />

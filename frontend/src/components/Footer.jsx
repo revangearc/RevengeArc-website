@@ -33,6 +33,7 @@ const cols = [
       { label: "Progress Hub", href: "#progress" },
       { label: "Profile System", href: "#profile" },
       { label: "Creator Program", href: "#creator" },
+      { label: "Blog", to: "/blog" },
       { label: "Discord", href: SOCIALS.discord, external: true },
     ],
   },
