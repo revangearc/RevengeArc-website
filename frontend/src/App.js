@@ -5,7 +5,6 @@ import { Toaster } from "sonner";
 import Landing from "./pages/Landing";
 import AdminLogin from "./pages/AdminLogin";
 import AdminDashboard from "./pages/AdminDashboard";
-import BlogPage from "./pages/Blog";
 import WaitlistPage from "./pages/Waitlist";
 import CreatorPage from "./pages/Creator";
 import {
@@ -26,13 +25,14 @@ function App() {
           <Route path="/" element={<Landing />} />
           <Route path="/admin" element={<AdminLogin />} />
           <Route path="/admin/dashboard" element={<AdminDashboard />} />
-          <Route path="/blog" element={<BlogPage />} />
           <Route path="/waitlist" element={<WaitlistPage />} />
           <Route path="/creator" element={<CreatorPage />} />
           {/* Capitalised aliases redirect to canonical lowercase */}
           <Route path="/Waitlist" element={<Navigate to="/waitlist" replace />} />
           <Route path="/Creator" element={<Navigate to="/creator" replace />} />
-          <Route path="/Blog" element={<Navigate to="/blog" replace />} />
+          {/* Old /blog route → redirect to Legal Center */}
+          <Route path="/blog" element={<Navigate to="/legal" replace />} />
+          <Route path="/Blog" element={<Navigate to="/legal" replace />} />
           <Route path="/terms" element={<TermsPage />} />
           <Route path="/privacy" element={<PrivacyPage />} />
           <Route path="/refund" element={<RefundPage />} />

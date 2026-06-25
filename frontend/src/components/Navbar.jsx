@@ -19,7 +19,7 @@ const TOP_LINKS = [
   { href: "#features", label: "Features", dropdown: true },
   { href: "#pricing", label: "Pricing" },
   { href: "/creator", label: "Creators" },
-  { href: "/blog", label: "Blog" },
+  { href: "/legal", label: "Legal Center" },
   { href: "#faq", label: "FAQ" },
 ];
 
@@ -175,7 +175,7 @@ export default function Navbar() {
                 </button>
               ))}
               <div className="text-[10px] tracking-[0.3em] text-white/45 font-bold px-3 mt-3 mb-1">EXPLORE</div>
-              {[{h:"#pricing",l:"Pricing"},{h:"/creator",l:"Creators"},{h:"/blog",l:"Blog"},{h:"#faq",l:"FAQ"}].map(x=>(
+              {[{h:"#pricing",l:"Pricing"},{h:"/creator",l:"Creators"},{h:"/legal",l:"Legal Center"},{h:"#faq",l:"FAQ"}].map(x=>(
                 <button key={x.h} onClick={()=>goTo(x.h)} className="py-2.5 px-3 text-white/80 hover:text-white hover:bg-white/5 rounded-lg text-left">{x.l}</button>
               ))}
               <button onClick={() => goTo("/waitlist")} className="btn-primary justify-center mt-3">Join Waitlist</button>

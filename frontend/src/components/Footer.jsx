@@ -34,7 +34,6 @@ const cols = [
       { label: "Profile System", href: "#profile" },
       { label: "Join Waitlist", to: "/waitlist" },
       { label: "Creator Program", to: "/creator" },
-      { label: "Blog", to: "/blog" },
       { label: "Discord", href: SOCIALS.discord, external: true },
     ],
   },
