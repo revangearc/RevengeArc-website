@@ -92,7 +92,7 @@ export default function BlogPage() {
           </h1>
           <p className="text-white/55 text-base sm:text-lg mt-5 max-w-2xl mx-auto leading-relaxed">
             Discipline, training systems, transformation stories, and the unfiltered playbook behind Revenge Arc.
-            Drop in for the long-form stuff that doesn't fit in your feed.
+            Drop in for the long-form stuff that doesn&#39;t fit in your feed.
           </p>
         </motion.div>
 
@@ -122,7 +122,7 @@ export default function BlogPage() {
                 </div>
                 <h3 className="font-display font-extrabold text-2xl mt-5">The journal is warming up.</h3>
                 <p className="text-white/55 text-sm mt-2 max-w-md">
-                  We couldn't reach the Soro feed right now. Refresh in a moment, or follow us on Instagram and TikTok for daily drops.
+                  We couldn&#39;t reach the Soro feed right now. Refresh in a moment, or follow us on Instagram and TikTok for daily drops.
                 </p>
               </div>
             )}

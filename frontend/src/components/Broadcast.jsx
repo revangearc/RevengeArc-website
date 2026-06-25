@@ -91,7 +91,6 @@ export default function Broadcast({ prefillRecipients = [], onPrefillUsed }) {
       setCustomRecipients(prev => Array.from(new Set([...prev, ...prefillRecipients])));
       onPrefillUsed?.();
     }
-    // eslint-disable-next-line
   }, []);
 
   const insertAtCursor = useCallback((before, after = "", placeholder = "") => {
@@ -451,7 +450,7 @@ export default function Broadcast({ prefillRecipients = [], onPrefillUsed }) {
               <button onClick={() => setConfirmOpen(false)} className="absolute top-4 right-4 h-8 w-8 rounded-full border border-white/10 grid place-items-center text-white/60 hover:text-white"><X className="h-4 w-4" /></button>
               <div className="h-12 w-12 rounded-2xl bg-amber-500/15 border border-amber-500/40 grid place-items-center"><AlertTriangle className="h-5 w-5 text-amber-300" /></div>
               <h3 className="font-display font-extrabold text-2xl mt-4">Confirm broadcast</h3>
-              <p className="text-white/60 mt-2 text-sm">You're about to email <span className="font-bold text-white">{groupCount}</span> recipients in the <span className="font-bold text-white">{groupMeta?.label}</span> group. This cannot be undone.</p>
+              <p className="text-white/60 mt-2 text-sm">You&#39;re about to email <span className="font-bold text-white">{groupCount}</span> recipients in the <span className="font-bold text-white">{groupMeta?.label}</span> group. This cannot be undone.</p>
               <div className="mt-5 rounded-xl border border-white/10 bg-white/4 p-3.5">
                 <div className="text-[10px] tracking-[0.3em] text-white/45 font-bold">SUBJECT</div>
                 <div className="text-white text-sm mt-1 truncate">{subject}</div>
@@ -726,7 +725,7 @@ function EmailPreview({ subject, html }) {
               <span style={{ display: "inline-block", margin: "0 4px", padding: "6px 12px", background: "rgba(168,85,247,0.12)", border: "1px solid rgba(168,85,247,0.35)", borderRadius: "999px", color: "#c4b5fd", fontSize: "10px", fontWeight: 700, letterSpacing: "2px" }}>DISCORD</span>
             </div>
             <div style={{ color: "#7a7a96", fontSize: "11px", lineHeight: 1.6 }}>
-              You're receiving this because you joined the Revenge Arc movement.<br />
+              You&#39;re receiving this because you joined the Revenge Arc movement.<br />
               Need help? <a href={`mailto:${SUPPORT_EMAIL}`} style={{ color: "#a855f7" }}>{SUPPORT_EMAIL}</a><br />
               <span style={{ color: "#a855f7", fontWeight: 700, letterSpacing: "3px" }}>THEREVENGE_ARC</span> · Built for warriors.
             </div>

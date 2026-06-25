@@ -41,11 +41,15 @@ const cols = [
   {
     title: "Legal",
     links: [
-      { label: "Terms of Service", to: "/terms" },
-      { label: "Privacy Policy", to: "/privacy" },
-      { label: "Refund Policy", to: "/refund" },
+      { label: "Legal Center", to: "/legal" },
+      { label: "Terms", to: "/terms" },
+      { label: "Privacy", to: "/privacy" },
+      { label: "AI & Health Disclaimer", to: "/ai-health-disclaimer" },
+      { label: "Community Guidelines", to: "/community-guidelines" },
+      { label: "Subscription & Refund Policy", to: "/subscriptions-refunds" },
+      { label: "Data Deletion", to: "/data-deletion" },
+      { label: "Cookies", to: "/cookies" },
       { label: "Contact", to: "/contact" },
-      { label: "Support", to: "/support" },
     ],
   },
 ];
@@ -86,7 +90,7 @@ export default function Footer() {
           </div>
 
           {cols.map((col) => (
-            <div key={col.title} className="lg:col-span-2 sm:col-span-2">
+            <div key={col.title} className={`${col.title === "Legal" ? "lg:col-span-3" : "lg:col-span-2"} sm:col-span-2`}>
               <div className="text-[11px] tracking-[0.3em] text-white/45 font-bold mb-4">{col.title.toUpperCase()}</div>
               <ul className="space-y-2.5">
                 {col.links.map((l) => (

@@ -8,7 +8,11 @@ import AdminDashboard from "./pages/AdminDashboard";
 import BlogPage from "./pages/Blog";
 import WaitlistPage from "./pages/Waitlist";
 import CreatorPage from "./pages/Creator";
-import { TermsPage, PrivacyPage, RefundPage, ContactPage, SupportPage } from "./pages/Legal";
+import {
+  TermsPage, PrivacyPage, RefundPage, ContactPage, SupportPage,
+  LegalCenterPage, AIHealthDisclaimerPage, CommunityGuidelinesPage,
+  SubscriptionsRefundsPage, DataDeletionPage, CookiesPage,
+} from "./pages/Legal";
 
 function App() {
   useEffect(() => {
@@ -34,6 +38,12 @@ function App() {
           <Route path="/refund" element={<RefundPage />} />
           <Route path="/contact" element={<ContactPage />} />
           <Route path="/support" element={<SupportPage />} />
+          <Route path="/legal" element={<LegalCenterPage />} />
+          <Route path="/ai-health-disclaimer" element={<AIHealthDisclaimerPage />} />
+          <Route path="/community-guidelines" element={<CommunityGuidelinesPage />} />
+          <Route path="/subscriptions-refunds" element={<SubscriptionsRefundsPage />} />
+          <Route path="/data-deletion" element={<DataDeletionPage />} />
+          <Route path="/cookies" element={<CookiesPage />} />
         </Routes>
       </BrowserRouter>
       <Toaster

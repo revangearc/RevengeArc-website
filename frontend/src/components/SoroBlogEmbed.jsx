@@ -70,7 +70,7 @@ export default function SoroBlogEmbed({ variant = "section" }) {
           </div>
           <h3 className="font-display font-extrabold text-2xl mt-5">The journal is warming up.</h3>
           <p className="text-white/55 text-sm mt-2 max-w-md">
-            We couldn't reach the Soro feed right now. Refresh in a moment, or follow us on Instagram and TikTok for daily drops.
+            We couldn&#39;t reach the Soro feed right now. Refresh in a moment, or follow us on Instagram and TikTok for daily drops.
           </p>
         </div>
       )}
